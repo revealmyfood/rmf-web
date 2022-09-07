@@ -39,12 +39,6 @@ const Restaurant = ({ data }: Props) => {
   const restaurantData = Object.values(data)[restaurant as any].dishItems.menu;
   const dishesData: Dish[] = Object.values(restaurantData);
 
-  const lifestyles = [...Array(3).keys()].map((k) => `lifestyle_${k}`);
-  const categories = [...Array(2).keys()].map((k) => `category_${k}`);
-  const healtTags = [...Array(9).keys()].map((k) => `health_tags_${k}`);
-  const ingredients = [...Array(31).keys()].map((k) => `ingredient_${k}`);
-  const allergens = [...Array(14).keys()].map((k) => `allergens_${k}`);
-
   const hasLifestyle = dishesData.map((d, i) =>
     Object.keys(d).filter((key) => key.match(/lifestyle/))
   );
@@ -60,6 +54,7 @@ const Restaurant = ({ data }: Props) => {
 
   return (
     <Grid grow>
+      {/* <pre>{JSON.stringify(ingredietsMatch, null, 2)}</pre> */}
       <Grid.Col span={12}>
         <Breadcrumbs>
           <Link href="/restaurants" passHref>
@@ -68,11 +63,19 @@ const Restaurant = ({ data }: Props) => {
         </Breadcrumbs>
       </Grid.Col>
 
+      <Title px="sm" order={1}>
+        {Object.values(data)[restaurant].name}
+      </Title>
+
       {dishesData.map((dish, index) => (
         <Grid.Col span={12} key={index}>
           <Card withBorder shadow="sm" radius="md">
             <Card.Section withBorder inheritPadding py="xs">
               <Title order={4}>{dish.dishName}</Title>
+            </Card.Section>
+
+            <Card.Section withBorder inheritPadding py="xs">
+              <Text weight={400}>{dish.description}</Text>
             </Card.Section>
 
             {/* Lifestyles */}
@@ -96,12 +99,11 @@ const Restaurant = ({ data }: Props) => {
                     </ThemeIcon>
                   }
                 >
-                  {lifestyles.map(
-                    (lifestyle, index) =>
-                      dish[lifestyle] && (
-                        <List.Item key={index}>{dish[lifestyle]}</List.Item>
-                      )
-                  )}
+                  {Object.entries(dish)
+                    .filter(([key]) => key.match(/lifestyle_/))
+                    .map(([key, lifestyle]) => (
+                      <List.Item key={index}>{lifestyle}</List.Item>
+                    ))}
                 </List>
               </Card.Section>
             )}
@@ -127,18 +129,17 @@ const Restaurant = ({ data }: Props) => {
                     </ThemeIcon>
                   }
                 >
-                  {healtTags.map(
-                    (healthTag, index) =>
-                      dish[healthTag] && (
-                        <List.Item key={index}>{dish[healthTag]}</List.Item>
-                      )
-                  )}
+                  {Object.entries(dish)
+                    .filter(([key]) => key.match(/health_tag/))
+                    .map(([key, healthTag]) => (
+                      <List.Item key={index}>{healthTag}</List.Item>
+                    ))}
                 </List>
               </Card.Section>
             )}
 
             {/* Ingredients */}
-            {hasIngredients[index].length > 0 && (
+            {hasIngredients.length > 0 && (
               <Card.Section withBorder inheritPadding py="xs">
                 <Text py="xs" weight={"bold"}>
                   Ingredients
@@ -160,14 +161,11 @@ const Restaurant = ({ data }: Props) => {
                         </ThemeIcon>
                       }
                     >
-                      {ingredients.map(
-                        (ingredient, index) =>
-                          dish[ingredient] && (
-                            <List.Item key={index}>
-                              {dish[ingredient]}
-                            </List.Item>
-                          )
-                      )}
+                      {Object.entries(dish)
+                        .filter(([key]) => key.match(/ingredient_/))
+                        .map(([key, ingredient]) => (
+                          <List.Item key={index}>{ingredient}</List.Item>
+                        ))}
                     </List>
                   </Grid.Col>
                 </Grid>
@@ -195,12 +193,11 @@ const Restaurant = ({ data }: Props) => {
                     </ThemeIcon>
                   }
                 >
-                  {allergens.map(
-                    (allergen, index) =>
-                      dish[allergen] && (
-                        <List.Item key={index}>{dish[allergen]}</List.Item>
-                      )
-                  )}
+                  {Object.entries(dish)
+                    .filter(([key]) => key.match(/allergen_/))
+                    .map(([key, allergen]) => (
+                      <List.Item key={index}>{allergen}</List.Item>
+                    ))}
                 </List>
               </Card.Section>
             )}
@@ -260,7 +257,7 @@ const Restaurant = ({ data }: Props) => {
                 }
               >
                 <List.Item>
-                  <Text weight={500}>{dish.price}</Text>
+                  <Text weight={"bold"}>{dish.price} £</Text>
                 </List.Item>
               </List>
             </Card.Section>
@@ -308,8 +305,6 @@ export async function getStaticProps() {
 
   if (restaurantsData.exists()) {
     data = restaurantsData.val();
-
-    // console.log(dishes);
   }
 
   return {

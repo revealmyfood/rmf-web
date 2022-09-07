@@ -1,3 +1,5 @@
+// @ts-nocheck
+
 import React from "react";
 import { Button, Card, Grid, Text } from "@mantine/core";
 import { child, get } from "firebase/database";
@@ -44,9 +46,7 @@ export async function getStaticProps() {
 
   if (restaurantsData.exists()) {
     let data = restaurantsData.val();
-    restaurants = Object.keys(data).map((r) =>
-      r.split("_").join(" ").toLowerCase()
-    );
+    restaurants = Object.values(data).map((d) => d.name);
     dishes = Object.values(data);
   }
 

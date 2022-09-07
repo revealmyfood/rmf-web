@@ -17,7 +17,7 @@ export default function List({ restaurants, dishes }: Props) {
   return (
     <Grid grow>
       {restaurants.map((restaurant: Restaurant, index: number) => (
-        <Grid.Col span={6} key={index}>
+        <Grid.Col md={6} xs={12} key={index}>
           <Link href="/restaurants/[restaurant]" as={`/restaurants/${index}`}>
             <Card withBorder shadow="sm" radius="md">
               <Card.Section withBorder inheritPadding py="xs">

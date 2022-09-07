@@ -102,7 +102,7 @@ const Restaurant = ({ data }: Props) => {
                   {Object.entries(dish)
                     .filter(([key]) => key.match(/lifestyle_/))
                     .map(([key, lifestyle]) => (
-                      <List.Item key={index}>{lifestyle}</List.Item>
+                      <List.Item key={key}>{lifestyle}</List.Item>
                     ))}
                 </List>
               </Card.Section>
@@ -132,7 +132,7 @@ const Restaurant = ({ data }: Props) => {
                   {Object.entries(dish)
                     .filter(([key]) => key.match(/health_tag/))
                     .map(([key, healthTag]) => (
-                      <List.Item key={index}>{healthTag}</List.Item>
+                      <List.Item key={key}>{healthTag}</List.Item>
                     ))}
                 </List>
               </Card.Section>
@@ -164,7 +164,7 @@ const Restaurant = ({ data }: Props) => {
                       {Object.entries(dish)
                         .filter(([key]) => key.match(/ingredient_/))
                         .map(([key, ingredient]) => (
-                          <List.Item key={index}>{ingredient}</List.Item>
+                          <List.Item key={key}>{ingredient}</List.Item>
                         ))}
                     </List>
                   </Grid.Col>
@@ -196,7 +196,7 @@ const Restaurant = ({ data }: Props) => {
                   {Object.entries(dish)
                     .filter(([key]) => key.match(/allergen_/))
                     .map(([key, allergen]) => (
-                      <List.Item key={index}>{allergen}</List.Item>
+                      <List.Item key={key}>{allergen}</List.Item>
                     ))}
                 </List>
               </Card.Section>
@@ -285,14 +285,14 @@ const Restaurant = ({ data }: Props) => {
   );
 };
 
-export const getStaticPaths: GetStaticPaths<{ slug: string }> = async () => {
-  return {
-    paths: [], //indicates that no page needs be created at build time
-    fallback: "blocking", //indicates the type of fallback
-  };
-};
+// export const getStaticPaths: GetStaticPaths<{ slug: string }> = async () => {
+//   return {
+//     paths: [], //indicates that no page needs be created at build time
+//     fallback: "blocking", //indicates the type of fallback
+//   };
+// };
 
-export async function getStaticProps() {
+export async function getServerSideProps() {
   const app = createFirebaseApp();
   const ref = createFirebaseDb(app);
 

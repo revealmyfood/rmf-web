@@ -1,10 +1,10 @@
 // @ts-nocheck
 import { Accordion, Anchor, Breadcrumbs, Grid, Title } from "@mantine/core";
 import { get, child } from "firebase/database";
-import { GetStaticPaths } from "next";
+// import { GetStaticPaths } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import DishCard from "../../components/dishCard";
+import DishCard from "../../components/DishCard";
 import { createFirebaseApp, createFirebaseDb } from "../../firebase/clientApp";
 import { Dish, RestaurantData } from "../../interfaces/dishesInterface";
 

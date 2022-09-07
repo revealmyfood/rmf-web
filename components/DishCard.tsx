@@ -1,4 +1,3 @@
-// @ts-nocheck
 import React from "react";
 import {
   Grid,
@@ -12,7 +11,7 @@ import {
   Chip,
   Accordion,
 } from "@mantine/core";
-import { IconCircle, IconCell, IconTag, IconApple } from "@tabler/icons";
+import { IconCircle, IconCell, IconApple } from "@tabler/icons";
 import { Dish } from "../interfaces/dishesInterface";
 
 interface Props {
@@ -37,7 +36,7 @@ const DishCard = ({
           <Card.Section inheritPadding p="md">
             <Group position="apart">
               <Title order={5}>{dish.dishName}</Title>
-              <Badge size="xl" radius="md">
+              <Badge variant="filled" size="xl" radius="md">
                 {dish.price} £
               </Badge>
             </Group>

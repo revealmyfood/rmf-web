@@ -36,7 +36,9 @@ export async function getStaticProps() {
   const app = createFirebaseApp();
   const ref = createFirebaseDb(app);
 
-  const restaurantsData = await get(child(ref, "/menuLists"));
+  const restaurantsData = await get(
+    child(ref, "/multiRestaurantUniverse/reveal_restaurant_partners/menuLists")
+  );
   let restaurants: string[] = [];
   let dishes: string[] | any = [];
 

@@ -9,9 +9,12 @@ import {
   ThemeIcon,
   Title,
 } from "@mantine/core";
+import { ListItem } from "@mantine/core/lib/List/ListItem/ListItem";
 import {
   IconApple,
+  IconCell,
   IconChefHat,
+  IconCircle,
   IconCircleCheck,
   IconReceipt2,
   IconTag,
@@ -21,27 +24,27 @@ import { GetStaticPaths } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { createFirebaseApp, createFirebaseDb } from "../../firebase/clientApp";
-import { Dish } from "../../interfaces/dishesInterface";
+import { Dish, RestaurantData } from "../../interfaces/dishesInterface";
 
 type Props = {
-  dishes: Dish[];
+  data: RestaurantData;
 };
 
-const Restaurant = ({ dishes }: Props) => {
+const Restaurant = ({ data }: Props) => {
   const router = useRouter();
   const { restaurant } = router.query;
-  const restaurantDishes = dishes[parseInt(restaurant as any)] as Dish[];
-  // const categorizedDishes = restaurantDishes.reduce((acc, curr) => {
-  //   if (acc[curr.category_1]) {
-  //     acc[curr.category_1].push(curr);
-  //   } else {
-  //     acc[curr.category_1] = [curr];
-  //   }
-  // }, {});
+
+  const restaurantData = Object.values(data)[restaurant as any].dishItems.menu;
+  const dishesData: Dish[] = Object.values(restaurantData);
+
+  const lifestyles = [...Array(3).keys()].map((k) => `lifestyle_${k}`);
+  const categories = [...Array(2).keys()].map((k) => `category_${k}`);
+  const healtTags = [...Array(9).keys()].map((k) => `health_tags_${k}`);
+  const ingredients = [...Array(31).keys()].map((k) => `ingredient_${k}`);
+  const allergens = [...Array(14).keys()].map((k) => `allergens_${k}`);
 
   return (
     <Grid grow>
-      {/* <pre>{JSON.stringify(restaurantDishes, null, 2)}</pre> */}
       <Grid.Col span={12}>
         <Breadcrumbs>
           <Link href="/restaurants" passHref>
@@ -50,41 +53,146 @@ const Restaurant = ({ dishes }: Props) => {
         </Breadcrumbs>
       </Grid.Col>
 
-      {restaurantDishes.map((dish, index) => (
+      {dishesData.map((dish, index) => (
         <Grid.Col span={12} key={index}>
           <Card withBorder shadow="sm" radius="md">
             <Card.Section withBorder inheritPadding py="xs">
-              <Title order={5}>{dish.dishName}</Title>
+              <Title order={4}>{dish.dishName}</Title>
             </Card.Section>
+            {/* Lifestyles */}
             <Card.Section withBorder inheritPadding py="xs">
-              <Text py="xs">{dish.description}</Text>
+              <Text py="xs" weight={"bold"}>
+                Lifestyle
+              </Text>
               <List
                 spacing="xs"
                 size="md"
                 center
                 icon={
                   <ThemeIcon variant="light" color="gray" size={24} radius="xl">
-                    <IconChefHat size={16} />
+                    <IconCircle size={16} />
                   </ThemeIcon>
                 }
               >
-                <List.Item>{dish.category_1}</List.Item>
-                <List.Item
-                  icon={
-                    <ThemeIcon
-                      variant="light"
-                      color="gray"
-                      size={24}
-                      radius="xl"
-                    >
-                      <IconApple size={16} />
-                    </ThemeIcon>
-                  }
-                >
-                  {dish.energy}
+                {lifestyles.map(
+                  (lifestyle, index) =>
+                    dish[lifestyle] && (
+                      <List.Item key={index}>{dish[lifestyle]}</List.Item>
+                    )
+                )}
+              </List>
+            </Card.Section>
+
+            {/* Health Tags */}
+            <Card.Section withBorder inheritPadding py="xs">
+              <Text py="xs" weight={"bold"}>
+                Health Tags
+              </Text>
+              <List
+                spacing="xs"
+                size="md"
+                center
+                icon={
+                  <ThemeIcon variant="light" color="gray" size={24} radius="xl">
+                    <IconCircle size={16} />
+                  </ThemeIcon>
+                }
+              >
+                {healtTags.map(
+                  (healthTag, index) =>
+                    dish[healthTag] && (
+                      <List.Item key={index}>{dish[healthTag]}</List.Item>
+                    )
+                )}
+              </List>
+            </Card.Section>
+
+            {/* Ingredients */}
+            <Card.Section withBorder inheritPadding py="xs">
+              <Text py="xs" weight={"bold"}>
+                Ingredients
+              </Text>
+              <List
+                spacing="xs"
+                size="md"
+                center
+                icon={
+                  <ThemeIcon variant="light" color="gray" size={24} radius="xl">
+                    <IconCircle size={16} />
+                  </ThemeIcon>
+                }
+              >
+                {ingredients.map(
+                  (ingredient, index) =>
+                    dish[ingredient] && (
+                      <List.Item key={index}>{dish[ingredient]}</List.Item>
+                    )
+                )}
+              </List>
+            </Card.Section>
+
+            {/* Allergens */}
+            <Card.Section withBorder inheritPadding py="xs">
+              <Text py="xs" weight={"bold"}>
+                Allergens
+              </Text>
+              <List
+                spacing="xs"
+                size="md"
+                center
+                icon={
+                  <ThemeIcon variant="light" color="gray" size={24} radius="xl">
+                    <IconCircle size={16} />
+                  </ThemeIcon>
+                }
+              >
+                {allergens.map(
+                  (allergen, index) =>
+                    dish[allergen] && (
+                      <List.Item key={index}>{dish[allergen]}</List.Item>
+                    )
+                )}
+              </List>
+            </Card.Section>
+
+            {/* Nutrients */}
+            <Card.Section withBorder inheritPadding py="xs">
+              <Text py="xs" weight={"bold"}>
+                Nutrients
+              </Text>
+              <List
+                spacing="xs"
+                size="sm"
+                center
+                icon={
+                  <ThemeIcon
+                    variant="light"
+                    color="green"
+                    size={24}
+                    radius="xl"
+                  >
+                    <IconCell size={16} />
+                  </ThemeIcon>
+                }
+              >
+                <List.Item>
+                  <Text weight={500}>Energy: {dish.energy}</Text>
+                </List.Item>
+                <List.Item>
+                  <Text weight={500}>Fat: {dish.fat}</Text>
+                </List.Item>
+                <List.Item>
+                  <Text weight={500}>Fibre: {dish.fibre}</Text>
+                </List.Item>
+                <List.Item>
+                  <Text weight={500}>Proteins: {dish.protein}</Text>
+                </List.Item>
+                <List.Item>
+                  <Text weight={500}>Sugar: {dish.sugar}</Text>
                 </List.Item>
               </List>
             </Card.Section>
+
             <Card.Section withBorder inheritPadding py="xs">
               <List
                 spacing="xs"
@@ -109,6 +217,8 @@ const Restaurant = ({ dishes }: Props) => {
           </Card>
         </Grid.Col>
       ))}
+
+      <pre>{JSON.stringify(dishesData, null, 2)}</pre>
     </Grid>
   );
 };
@@ -124,17 +234,22 @@ export async function getStaticProps() {
   const app = createFirebaseApp();
   const ref = createFirebaseDb(app);
 
-  const restaurantsData = await get(child(ref, "/menuLists"));
-  let dishes: string[] | any = [];
+  // let dishes: string[] | any = [];
+  let data: string[] = [];
+
+  const restaurantsData = await get(
+    child(ref, "/multiRestaurantUniverse/reveal_restaurant_partners/menuLists")
+  );
 
   if (restaurantsData.exists()) {
-    let data = restaurantsData.val();
-    dishes = Object.values(data);
+    data = restaurantsData.val();
+
+    // console.log(dishes);
   }
 
   return {
     props: {
-      dishes,
+      data,
     },
   };
 }

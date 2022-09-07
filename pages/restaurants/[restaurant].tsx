@@ -143,8 +143,8 @@ const Restaurant = ({ data }: Props) => {
                 <Text py="xs" weight={"bold"}>
                   Ingredients
                 </Text>
-                <Grid>
-                  <Grid.Col span={hasIngredients[index].length > 1 ? 6 : 12}>
+                <Grid grow>
+                  <Grid.Col span={12}>
                     <List
                       spacing="xs"
                       size="md"

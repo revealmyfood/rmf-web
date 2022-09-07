@@ -1,5 +1,5 @@
 export interface RestaurantData {
-  [key: string]: DishList[];
+  [key: string]: DishList;
 }
 
 export interface DishList {

@@ -1,5 +1,6 @@
 // @ts-nocheck
 import {
+  Accordion,
   Anchor,
   Breadcrumbs,
   Button,
@@ -44,6 +45,19 @@ const Restaurant = ({ data }: Props) => {
   const ingredients = [...Array(31).keys()].map((k) => `ingredient_${k}`);
   const allergens = [...Array(14).keys()].map((k) => `allergens_${k}`);
 
+  const hasLifestyle = dishesData.map((d, i) =>
+    Object.keys(d).filter((key) => key.match(/lifestyle/))
+  );
+  const hasIngredients = dishesData.map((d, i) =>
+    Object.keys(d).filter((key) => key.match(/ingredient/))
+  );
+  const hasHealthTags = dishesData.map((d, i) =>
+    Object.keys(d).filter((key) => key.match(/health/))
+  );
+  const hasAllergens = dishesData.map((d, i) =>
+    Object.keys(d).filter((key) => key.match(/allergen/))
+  );
+
   return (
     <Grid grow>
       <Grid.Col span={12}>
@@ -60,101 +74,136 @@ const Restaurant = ({ data }: Props) => {
             <Card.Section withBorder inheritPadding py="xs">
               <Title order={4}>{dish.dishName}</Title>
             </Card.Section>
+
             {/* Lifestyles */}
-            <Card.Section withBorder inheritPadding py="xs">
-              <Text py="xs" weight={"bold"}>
-                Lifestyle
-              </Text>
-              <List
-                spacing="xs"
-                size="md"
-                center
-                icon={
-                  <ThemeIcon variant="light" color="gray" size={24} radius="xl">
-                    <IconCircle size={16} />
-                  </ThemeIcon>
-                }
-              >
-                {lifestyles.map(
-                  (lifestyle, index) =>
-                    dish[lifestyle] && (
-                      <List.Item key={index}>{dish[lifestyle]}</List.Item>
-                    )
-                )}
-              </List>
-            </Card.Section>
+            {hasLifestyle[index] && (
+              <Card.Section withBorder inheritPadding py="xs">
+                <Text py="xs" weight={"bold"}>
+                  Lifestyle
+                </Text>
+                <List
+                  spacing="xs"
+                  size="md"
+                  center
+                  icon={
+                    <ThemeIcon
+                      variant="light"
+                      color="gray"
+                      size={24}
+                      radius="xl"
+                    >
+                      <IconCircle size={16} />
+                    </ThemeIcon>
+                  }
+                >
+                  {lifestyles.map(
+                    (lifestyle, index) =>
+                      dish[lifestyle] && (
+                        <List.Item key={index}>{dish[lifestyle]}</List.Item>
+                      )
+                  )}
+                </List>
+              </Card.Section>
+            )}
 
             {/* Health Tags */}
-            <Card.Section withBorder inheritPadding py="xs">
-              <Text py="xs" weight={"bold"}>
-                Health Tags
-              </Text>
-              <List
-                spacing="xs"
-                size="md"
-                center
-                icon={
-                  <ThemeIcon variant="light" color="gray" size={24} radius="xl">
-                    <IconCircle size={16} />
-                  </ThemeIcon>
-                }
-              >
-                {healtTags.map(
-                  (healthTag, index) =>
-                    dish[healthTag] && (
-                      <List.Item key={index}>{dish[healthTag]}</List.Item>
-                    )
-                )}
-              </List>
-            </Card.Section>
+            {hasHealthTags[index] && (
+              <Card.Section withBorder inheritPadding py="xs">
+                <Text py="xs" weight={"bold"}>
+                  Health Tags
+                </Text>
+                <List
+                  spacing="xs"
+                  size="md"
+                  center
+                  icon={
+                    <ThemeIcon
+                      variant="light"
+                      color="gray"
+                      size={24}
+                      radius="xl"
+                    >
+                      <IconCircle size={16} />
+                    </ThemeIcon>
+                  }
+                >
+                  {healtTags.map(
+                    (healthTag, index) =>
+                      dish[healthTag] && (
+                        <List.Item key={index}>{dish[healthTag]}</List.Item>
+                      )
+                  )}
+                </List>
+              </Card.Section>
+            )}
 
             {/* Ingredients */}
-            <Card.Section withBorder inheritPadding py="xs">
-              <Text py="xs" weight={"bold"}>
-                Ingredients
-              </Text>
-              <List
-                spacing="xs"
-                size="md"
-                center
-                icon={
-                  <ThemeIcon variant="light" color="gray" size={24} radius="xl">
-                    <IconCircle size={16} />
-                  </ThemeIcon>
-                }
-              >
-                {ingredients.map(
-                  (ingredient, index) =>
-                    dish[ingredient] && (
-                      <List.Item key={index}>{dish[ingredient]}</List.Item>
-                    )
-                )}
-              </List>
-            </Card.Section>
+            {hasIngredients[index].length > 0 && (
+              <Card.Section withBorder inheritPadding py="xs">
+                <Text py="xs" weight={"bold"}>
+                  Ingredients
+                </Text>
+                <Grid>
+                  <Grid.Col span={hasIngredients[index].length > 1 ? 6 : 12}>
+                    <List
+                      spacing="xs"
+                      size="md"
+                      center
+                      icon={
+                        <ThemeIcon
+                          variant="light"
+                          color="gray"
+                          size={24}
+                          radius="xl"
+                        >
+                          <IconCircle size={16} />
+                        </ThemeIcon>
+                      }
+                    >
+                      {ingredients.map(
+                        (ingredient, index) =>
+                          dish[ingredient] && (
+                            <List.Item key={index}>
+                              {dish[ingredient]}
+                            </List.Item>
+                          )
+                      )}
+                    </List>
+                  </Grid.Col>
+                </Grid>
+              </Card.Section>
+            )}
 
             {/* Allergens */}
-            <Card.Section withBorder inheritPadding py="xs">
-              <Text py="xs" weight={"bold"}>
-                Allergens
-              </Text>
-              <List
-                spacing="xs"
-                size="md"
-                center
-                icon={
-                  <ThemeIcon variant="light" color="gray" size={24} radius="xl">
-                    <IconCircle size={16} />
-                  </ThemeIcon>
-                }
-              >
-                {allergens.map(
-                  (allergen, index) =>
-                    dish[allergen] && (
-                      <List.Item key={index}>{dish[allergen]}</List.Item>
-                    )
-                )}
-              </List>
-            </Card.Section>
+            {hasAllergens[index].length > 0 && (
+              <Card.Section withBorder inheritPadding py="xs">
+                <Text py="xs" weight={"bold"}>
+                  Allergens
+                </Text>
+                <List
+                  spacing="xs"
+                  size="md"
+                  center
+                  icon={
+                    <ThemeIcon
+                      variant="light"
+                      color="gray"
+                      size={24}
+                      radius="xl"
+                    >
+                      <IconCircle size={16} />
+                    </ThemeIcon>
+                  }
+                >
+                  {allergens.map(
+                    (allergen, index) =>
+                      dish[allergen] && (
+                        <List.Item key={index}>{dish[allergen]}</List.Item>
+                      )
+                  )}
+                </List>
+              </Card.Section>
+            )}
 
             {/* Nutrients */}
             <Card.Section withBorder inheritPadding py="xs">
@@ -219,7 +268,22 @@ const Restaurant = ({ data }: Props) => {
         </Grid.Col>
       ))}
 
-      <pre>{JSON.stringify(dishesData, null, 2)}</pre>
+      <Accordion defaultValue="customization" style={{ width: "100%" }}>
+        <Accordion.Item value="customization">
+          <Accordion.Control>Raw Data</Accordion.Control>
+          <Accordion.Panel>
+            <pre
+              style={{
+                backgroundColor: "#FAFAFA",
+                padding: "1rem",
+                overflow: "auto",
+              }}
+            >
+              {JSON.stringify(dishesData, null, 2)}
+            </pre>
+          </Accordion.Panel>
+        </Accordion.Item>
+      </Accordion>
     </Grid>
   );
 };

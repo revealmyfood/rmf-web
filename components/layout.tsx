@@ -1,5 +1,5 @@
 import React, { ReactNode } from "react";
-import { Container, Grid } from "@mantine/core";
+import { Container, Grid, useMantineTheme } from "@mantine/core";
 
 type Props = {
   children: ReactNode;

@@ -1,3 +1,4 @@
+import { ThemeContext } from "@emotion/react";
 import {
   TextInput,
   PasswordInput,
@@ -10,6 +11,7 @@ import {
   Group,
   Button,
   Center,
+  useMantineTheme,
 } from "@mantine/core";
 import type { NextPage } from "next";
 import Image from "next/image";

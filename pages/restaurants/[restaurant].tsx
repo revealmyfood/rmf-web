@@ -1,5 +1,5 @@
 // @ts-nocheck
-import { Accordion, Anchor, Breadcrumbs, Grid, Title } from "@mantine/core";
+import { Accordion, Anchor, Breadcrumbs, Grid, Text } from "@mantine/core";
 import { get, child } from "firebase/database";
 // import { GetStaticPaths } from "next";
 import Link from "next/link";
@@ -42,9 +42,16 @@ const Restaurant = ({ data }: Props) => {
         </Breadcrumbs>
       </Grid.Col>
 
-      <Title px="sm" order={1}>
+      <Text
+        px="sm"
+        py="lg"
+        variant="gradient"
+        size={40}
+        weight={700}
+        gradient={{ from: "teal", to: "lime", deg: 105 }}
+      >
         {Object.values(data)[restaurant].name}
-      </Title>
+      </Text>
 
       {dishesData.map((dish: Dish, index: number) => (
         <DishCard
@@ -57,13 +64,12 @@ const Restaurant = ({ data }: Props) => {
         />
       ))}
 
-      <Accordion defaultValue="customization" style={{ width: "100%" }}>
-        <Accordion.Item value="customization">
-          <Accordion.Control>Raw Data</Accordion.Control>
+      <Accordion style={{ width: "100%" }} variant="filled" radius={"md"}>
+        <Accordion.Item value="rawData">
+          <Accordion.Control>Show Raw Data</Accordion.Control>
           <Accordion.Panel>
             <pre
               style={{
-                backgroundColor: "#FAFAFA",
                 padding: "1rem",
                 overflow: "auto",
               }}

@@ -57,7 +57,7 @@ const DishCard = ({
                       size="lg"
                       key={key}
                       variant="gradient"
-                      gradient={{ from: "green", to: "lime" }}
+                      gradient={{ from: "teal", to: "lime", deg: 105 }}
                     >
                       {lifestyle}
                     </Badge>

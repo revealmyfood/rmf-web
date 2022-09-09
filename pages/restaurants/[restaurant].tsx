@@ -1,22 +1,17 @@
 // @ts-nocheck
-import { Accordion, Anchor, Breadcrumbs, Grid, Text } from "@mantine/core";
+import {Accordion, Anchor, Breadcrumbs, Grid, Image, Text} from "@mantine/core";
 import { get, child } from "firebase/database";
 // import { GetStaticPaths } from "next";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import DishCard from "../../components/DishCard";
 import { createFirebaseApp, createFirebaseDb } from "../../firebase/clientApp";
 import { Dish, RestaurantData } from "../../interfaces/dishesInterface";
-
 type Props = {
   data: RestaurantData;
 };
 
 const Restaurant = ({ data }: Props) => {
-  const router = useRouter();
-  const { restaurant } = router.query;
-
-  const restaurantData = Object.values(data)[restaurant as any].dishItems.menu;
+  const restaurantData = data.dishItems.menu;
   const dishesData: Dish[] = Object.values(restaurantData);
 
   const hasLifestyle = dishesData.map((d, i) =>
@@ -31,7 +26,6 @@ const Restaurant = ({ data }: Props) => {
   const hasAllergens = dishesData.map((d, i) =>
     Object.keys(d).filter((key) => key.match(/allergen/))
   );
-
   return (
     <Grid grow>
       <Grid.Col span={12}>
@@ -50,7 +44,7 @@ const Restaurant = ({ data }: Props) => {
         weight={700}
         gradient={{ from: "teal", to: "lime", deg: 105 }}
       >
-        {Object.values(data)[restaurant].name}
+        {data.name}
       </Text>
 
       {dishesData.map((dish: Dish, index: number) => (
@@ -90,23 +84,26 @@ const Restaurant = ({ data }: Props) => {
 //   };
 // };
 
-export async function getServerSideProps() {
+export async function getServerSideProps({query}) {
   const app = createFirebaseApp();
   const ref = createFirebaseDb(app);
 
-  let data: string[] = [];
+  let data: RestaurantData = null;
 
   const restaurantsData = await get(
-    child(ref, "/multiRestaurantUniverse/reveal_restaurant_partners/menuLists")
+    child(ref, `/multiRestaurantUniverse/reveal_restaurant_partners/menuLists/${query.restaurant}`)
   );
 
   if (restaurantsData.exists()) {
-    data = restaurantsData.val();
+    data = restaurantsData.val() as RestaurantData;
+    // const storage = getStorage(app);
+    // const starsRef = storageRef(storage, data.logoPath);
+    // data.url = await getDownloadURL(starsRef);
   }
 
   return {
     props: {
-      data,
+      data ,
     },
   };
 }

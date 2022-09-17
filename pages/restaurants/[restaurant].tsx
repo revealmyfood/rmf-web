@@ -16,7 +16,7 @@ import { Dish, DishInfo, RestaurantData } from '../../interfaces/dishesInterface
 import { start } from 'repl';
 import Head from 'next/head';
 import SEO from '../../components/SEO';
-import { NextApiRequest } from 'next';
+import { NextApiRequest, NextApiResponse } from 'next';
 // import { getDownloadURL, getStorage, ref as storageRef } from '@firebase/storage';
 type Props = {
 	data: {
@@ -59,11 +59,19 @@ const Restaurant = ({ data }: Props) => {
 	);
 };
 
+const ContentSecurityPolicy = (src: string) => `
+  default-src 'self' 'unsafe-inline' ${src};
+  script-src 'self' 'unsafe-inline' 'unsafe-eval' *.google-analytics.com *.googletagmanager.com ${src};
+  font-src 'self' ${src};;  
+`;
+
 export async function getServerSideProps({
 	query,
-	req
+	req,
+	res
 }: {
 	req: NextApiRequest;
+	res: NextApiResponse;
 	query: { restaurant: string; u: string };
 }) {
 	// const storage = getStorage(app);
@@ -75,8 +83,15 @@ export async function getServerSideProps({
 			`/multiRestaurantUniverse/reveal_restaurant_partners/menuLists/${query.restaurant}`
 		)
 	);
-	const headers = req.headers;
-	const origin = headers.origin;
+	// res.setHeader('Access-Control-Allow-Origin', '*');
+	//
+	// res.setHeader(
+	// 	'Access-Control-Allow-Headers',
+	// 	'Origin, X-Requested-With, Content-Type, Accept, Authorization'
+	// );
+	// if (req.method == 'OPTIONS') {
+	// 	res.setHeader('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE, GET');
+	// }
 
 	const allergensDataProm = get(dbRef(ref, '/allergenAssetPath'));
 	const [restaurantsData, allergensData] = await Promise.all([
@@ -111,7 +126,7 @@ export async function getServerSideProps({
 		// } else if (headers.host !== 'localhost:3000') {
 		// 	isNotValid = true;
 		// }
-		if (data.accessKey !== query.u) {
+		if ((data.accessKey || '') !== query.u) {
 			isNotValid = true;
 		}
 		if (isNotValid) {
@@ -122,6 +137,16 @@ export async function getServerSideProps({
 				}
 			};
 		}
+		res.setHeader('Access-Control-Allow-Origin', data.origin || '');
+		res.setHeader(
+			'Content-Security-Policy',
+			`${ContentSecurityPolicy(data.origin || '')} 
+			frame-ancestors 'self' ${data.origin || ''}`
+				.replace(/\s{2,}/g, ' ')
+				.trim()
+		);
+		res.setHeader('X-Frame-Options', `ALLOW-FROM ${data.origin || ''}`);
+		// res.removeHeader('X-Frame-Options');
 
 		const restaurantData = data.dishItems.menu;
 		const dishesData: [string, Dish][] = Object.entries(restaurantData);

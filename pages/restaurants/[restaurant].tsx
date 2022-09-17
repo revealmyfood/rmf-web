@@ -1,111 +1,138 @@
-// @ts-nocheck
-import {Accordion, Anchor, Breadcrumbs, Grid, Image, Text} from "@mantine/core";
-import { get, child } from "firebase/database";
-// import { GetStaticPaths } from "next";
-import Link from "next/link";
-import DishCard from "../../components/DishCard";
-import { createFirebaseApp, createFirebaseDb } from "../../firebase/clientApp";
-import { Dish, RestaurantData } from "../../interfaces/dishesInterface";
+import { Grid, Text } from '@mantine/core';
+import {
+	get,
+	child,
+	query as dbQuery,
+	equalTo,
+	orderByChild,
+	ref as dbRef,
+	getDatabase,
+	startAt,
+	orderByValue
+} from 'firebase/database';
+import DishCard from '../../components/DishCard';
+import { createFirebaseApp } from '../../firebase/clientApp';
+import { Dish, DishInfo, RestaurantData } from '../../interfaces/dishesInterface';
+import { start } from 'repl';
+// import { getDownloadURL, getStorage, ref as storageRef } from '@firebase/storage';
 type Props = {
-  data: RestaurantData;
+	data: {
+		name: string;
+		dishesData: DishInfo[];
+	};
 };
 
 const Restaurant = ({ data }: Props) => {
-  const restaurantData = data.dishItems.menu;
-  const dishesData: Dish[] = Object.values(restaurantData);
+	const { name, dishesData } = data;
+	return (
+		<Grid grow>
+			<Text
+				px='sm'
+				py='lg'
+				variant='gradient'
+				size={40}
+				weight={700}
+				gradient={{ from: 'teal', to: 'lime', deg: 105 }}
+			>
+				{name}
+			</Text>
 
-  const hasLifestyle = dishesData.map((d, i) =>
-    Object.keys(d).filter((key) => key.match(/lifestyle/))
-  );
-  const hasIngredients = dishesData.map((d, i) =>
-    Object.keys(d).filter((key) => key.match(/ingredient/))
-  );
-  const hasHealthTags = dishesData.map((d, i) =>
-    Object.keys(d).filter((key) => key.match(/health/))
-  );
-  const hasAllergens = dishesData.map((d, i) =>
-    Object.keys(d).filter((key) => key.match(/allergen/))
-  );
-  return (
-    <Grid grow>
-      <Grid.Col span={12}>
-        <Breadcrumbs>
-          <Link href="/restaurants" passHref>
-            <Anchor component="a">Restaurants</Anchor>
-          </Link>
-        </Breadcrumbs>
-      </Grid.Col>
-
-      <Text
-        px="sm"
-        py="lg"
-        variant="gradient"
-        size={40}
-        weight={700}
-        gradient={{ from: "teal", to: "lime", deg: 105 }}
-      >
-        {data.name}
-      </Text>
-
-      {dishesData.map((dish: Dish, index: number) => (
-        <DishCard
-          key={index}
-          dish={dish}
-          hasAllergens={hasAllergens[index]}
-          hasIngredients={hasIngredients[index]}
-          hasHealthTags={hasHealthTags[index]}
-          hasLifestyle={hasLifestyle[index]}
-        />
-      ))}
-
-      <Accordion style={{ width: "100%" }} variant="filled" radius={"md"}>
-        <Accordion.Item value="rawData">
-          <Accordion.Control>Show Raw Data</Accordion.Control>
-          <Accordion.Panel>
-            <pre
-              style={{
-                padding: "1rem",
-                overflow: "auto",
-              }}
-            >
-              {JSON.stringify(dishesData, null, 2)}
-            </pre>
-          </Accordion.Panel>
-        </Accordion.Item>
-      </Accordion>
-    </Grid>
-  );
+			{dishesData.map(dish => (
+				<DishCard
+					key={dish.id}
+					dish={dish}
+					allergens={dish.allergens}
+					hasIngredients={dish.hasIngredients}
+					healthTags={dish.healthTags}
+					lifestyle={dish.lifestyle}
+				/>
+			))}
+		</Grid>
+	);
 };
 
-// export const getStaticPaths: GetStaticPaths<{ slug: string }> = async () => {
-//   return {
-//     paths: [], //indicates that no page needs be created at build time
-//     fallback: "blocking", //indicates the type of fallback
-//   };
-// };
+export async function getServerSideProps({
+	query,
+	req
+}: {
+	req: Request;
+	query: { restaurant: string; u: string };
+}) {
+	// const storage = getStorage(app);
+	const app = createFirebaseApp();
+	const ref = getDatabase(app);
+	const restaurantsDataProm = get(
+		dbRef(
+			ref,
+			`/multiRestaurantUniverse/reveal_restaurant_partners/menuLists/${query.restaurant}`
+		)
+	);
 
-export async function getServerSideProps({query}) {
-  const app = createFirebaseApp();
-  const ref = createFirebaseDb(app);
+	const allergensDataProm = get(dbRef(ref, '/allergenAssetPath'));
+	const [restaurantsData, allergensData] = await Promise.all([
+		restaurantsDataProm,
+		allergensDataProm
+		// .then(snapshot => snapshot.val())
+		// .then(allergensData =>
+		// 	Promise.all(
+		// 		Object.entries(allergensData).map(([k, v]) =>
+		// 			(v && typeof v === 'string'
+		// 				? getDownloadURL(storageRef(storage, v))
+		// 				: Promise.resolve(null)
+		// 			).then(url => ({ [k]: url }))
+		// 		)
+		// 	)
+		// )
+		// .then(allergensData => Object.assign({}, ...allergensData))
+	]);
 
-  let data: RestaurantData = null;
+	let serverData = {};
+	if (restaurantsData.exists()) {
+		const data = restaurantsData.val() as RestaurantData;
+		const allergens = allergensData.val();
 
-  const restaurantsData = await get(
-    child(ref, `/multiRestaurantUniverse/reveal_restaurant_partners/menuLists/${query.restaurant}`)
-  );
+		const restaurantData = data.dishItems.menu;
+		const dishesData: [string, Dish][] = Object.entries(restaurantData);
 
-  if (restaurantsData.exists()) {
-    data = restaurantsData.val() as RestaurantData;
-    // const storage = getStorage(app);
-    // const starsRef = storageRef(storage, data.logoPath);
-    // data.url = await getDownloadURL(starsRef);
-  }
-
-  return {
-    props: {
-      data ,
-    },
-  };
+		serverData = {
+			allergens,
+			name: data.name,
+			dishesData: dishesData.map(([key, dish]) => ({
+				id: key,
+				dishName: dish.dishName,
+				description: dish.description,
+				price: dish.price,
+				...Object.keys(dish)
+					.filter(key => key.match(/lifestyle|ingredient|health/) || key in allergens)
+					.reduce(
+						(prev, curr) => {
+							return {
+								...prev,
+								lifestyle: curr.match(/lifestyle/)
+									? [...prev.lifestyle, dish[curr]]
+									: prev.lifestyle,
+								healthTags: curr.match(/health/)
+									? [...prev.healthTags, dish[curr]]
+									: prev.healthTags,
+								hasIngredients: prev.hasIngredients || Boolean(curr.match(/ingredient/)),
+								allergens: curr in allergens ? [...prev.allergens, curr] : prev.allergens
+							};
+						},
+						{
+							lifestyle: [],
+							healthTags: [],
+							hasIngredients: false,
+							allergens: []
+						} as Record<string, any>
+					)
+			}))
+		};
+	}
+	return {
+		props: {
+			data: serverData
+		}
+	};
 }
 
 export default Restaurant;

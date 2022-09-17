@@ -14,40 +14,47 @@ import DishCard from '../../components/DishCard';
 import { createFirebaseApp } from '../../firebase/clientApp';
 import { Dish, DishInfo, RestaurantData } from '../../interfaces/dishesInterface';
 import { start } from 'repl';
+import Head from 'next/head';
+import SEO from '../../components/SEO';
 // import { getDownloadURL, getStorage, ref as storageRef } from '@firebase/storage';
 type Props = {
 	data: {
+		title: string;
+		description: string;
 		name: string;
 		dishesData: DishInfo[];
 	};
 };
 
 const Restaurant = ({ data }: Props) => {
-	const { name, dishesData } = data;
+	const { title, description, name, dishesData } = data;
 	return (
-		<Grid grow>
-			<Text
-				px='sm'
-				py='lg'
-				variant='gradient'
-				size={40}
-				weight={700}
-				gradient={{ from: 'teal', to: 'lime', deg: 105 }}
-			>
-				{name}
-			</Text>
+		<>
+			<SEO title={title} description={description} />
+			<Grid grow>
+				<Text
+					px='sm'
+					py='lg'
+					variant='gradient'
+					size={40}
+					weight={700}
+					gradient={{ from: 'teal', to: 'lime', deg: 105 }}
+				>
+					{name}
+				</Text>
 
-			{dishesData.map(dish => (
-				<DishCard
-					key={dish.id}
-					dish={dish}
-					allergens={dish.allergens}
-					hasIngredients={dish.hasIngredients}
-					healthTags={dish.healthTags}
-					lifestyle={dish.lifestyle}
-				/>
-			))}
-		</Grid>
+				{dishesData.map(dish => (
+					<DishCard
+						key={dish.id}
+						dish={dish}
+						allergens={dish.allergens}
+						hasIngredients={dish.hasIngredients}
+						healthTags={dish.healthTags}
+						lifestyle={dish.lifestyle}
+					/>
+				))}
+			</Grid>
+		</>
 	);
 };
 
@@ -119,6 +126,8 @@ export async function getServerSideProps({
 		const dishesData: [string, Dish][] = Object.entries(restaurantData);
 
 		serverData = {
+			title: `Menu ${data.name}`,
+			description: data.metaDescription || '',
 			allergens,
 			name: data.name,
 			dishesData: dishesData.map(([key, dish]) => ({

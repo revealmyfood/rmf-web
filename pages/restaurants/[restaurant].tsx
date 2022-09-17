@@ -16,6 +16,7 @@ import { Dish, DishInfo, RestaurantData } from '../../interfaces/dishesInterface
 import { start } from 'repl';
 import Head from 'next/head';
 import SEO from '../../components/SEO';
+import { NextApiRequest } from 'next';
 // import { getDownloadURL, getStorage, ref as storageRef } from '@firebase/storage';
 type Props = {
 	data: {
@@ -62,7 +63,7 @@ export async function getServerSideProps({
 	query,
 	req
 }: {
-	req: Request;
+	req: NextApiRequest;
 	query: { restaurant: string; u: string };
 }) {
 	// const storage = getStorage(app);
@@ -74,7 +75,7 @@ export async function getServerSideProps({
 			`/multiRestaurantUniverse/reveal_restaurant_partners/menuLists/${query.restaurant}`
 		)
 	);
-	const headers = req.headers as unknown as { origin: string; host: string };
+	const headers = req.headers;
 	const origin = headers.origin;
 
 	const allergensDataProm = get(dbRef(ref, '/allergenAssetPath'));

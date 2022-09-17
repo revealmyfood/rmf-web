@@ -67,8 +67,8 @@ export async function getServerSideProps({
 			`/multiRestaurantUniverse/reveal_restaurant_partners/menuLists/${query.restaurant}`
 		)
 	);
-
-	console.log('ORIGIN', req.headers.origin);
+	const headers = req.headers as unknown as { origin: string; host: string };
+	const origin = headers.origin;
 
 	const allergensDataProm = get(dbRef(ref, '/allergenAssetPath'));
 	const [restaurantsData, allergensData] = await Promise.all([
@@ -92,7 +92,21 @@ export async function getServerSideProps({
 	if (restaurantsData.exists()) {
 		const data = restaurantsData.val() as RestaurantData;
 		const allergens = allergensData.val();
+
+		let isNotValid: boolean = false;
+
+		// if (origin) { TODO - check origin because we can't receive it from <object> tag
+		// 	const originUrl = new URL(origin);
+		// 	if (originUrl.hostname !== 'localhost' && data.origin !== originUrl.origin) {
+		// 		isNotValid = true;
+		// 	}
+		// } else if (headers.host !== 'localhost:3000') {
+		// 	isNotValid = true;
+		// }
 		if (data.accessKey !== query.u) {
+			isNotValid = true;
+		}
+		if (isNotValid) {
 			return {
 				redirect: {
 					destination: '/404',
@@ -100,6 +114,7 @@ export async function getServerSideProps({
 				}
 			};
 		}
+
 		const restaurantData = data.dishItems.menu;
 		const dishesData: [string, Dish][] = Object.entries(restaurantData);
 

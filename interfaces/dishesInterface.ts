@@ -10,6 +10,7 @@ export interface DishInfo {
 }
 export interface RestaurantData {
 	name: string;
+	origin: string;
 	accessKey: string | undefined;
 	dishItems: {
 		menu: object;

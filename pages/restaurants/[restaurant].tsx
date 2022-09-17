@@ -1,4 +1,4 @@
-import { Grid, Text } from '@mantine/core';
+import { Container, Grid, MultiSelect, Text } from '@mantine/core';
 import {
 	get,
 	child,
@@ -15,7 +15,7 @@ import { createFirebaseApp } from '../../firebase/clientApp';
 import { Dish, DishInfo, RestaurantData } from '../../interfaces/dishesInterface';
 import SEO from '../../components/SEO';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 // import { getDownloadURL, getStorage, ref as storageRef } from '@firebase/storage';
 type Props = {
@@ -24,12 +24,17 @@ type Props = {
 		description: string;
 		name: string;
 		dishesData: DishInfo[];
+		allergens: string[];
+		lifestyles: string[];
 	};
 };
 
 const Restaurant = ({ data }: Props) => {
-	const { title, description, name, dishesData } = data;
+	const { title, description, name, dishesData, allergens, lifestyles } = data;
 	const router = useRouter();
+	const [dishes, setDishes] = useState<DishInfo[]>(dishesData);
+	const [allergensFilter, setAllergensFilter] = useState<string[]>([]);
+	const [lifestylesFilter, setLifestyleFilter] = useState<string[]>([]);
 
 	useEffect(() => {
 		const inIframe = window === window.top;
@@ -37,6 +42,22 @@ const Restaurant = ({ data }: Props) => {
 			router.push('/404');
 		}
 	}, [router]);
+
+	useEffect(() => {
+		let filteredDishes = dishesData;
+		if (allergensFilter.length > 0) {
+			filteredDishes = dishesData.filter(dish =>
+				dish.allergens.some(allergen => allergensFilter.includes(allergen))
+			);
+		}
+		if (lifestylesFilter.length > 0) {
+			filteredDishes = dishesData.filter(dish =>
+				dish.lifestyle.some(lifestyle => lifestylesFilter.includes(lifestyle))
+			);
+		}
+
+		setDishes(filteredDishes);
+	}, [allergensFilter, dishesData, lifestylesFilter]);
 
 	return (
 		<>
@@ -52,8 +73,35 @@ const Restaurant = ({ data }: Props) => {
 				>
 					{name}
 				</Text>
-
-				{dishesData.map(dish => (
+				<Grid.Col>
+					<MultiSelect
+						data={Object.keys(allergens)
+							.sort()
+							.map(all => ({
+								label: all.toLowerCase().replace(/\b(\w)/g, s => s.toUpperCase()),
+								value: all
+							}))}
+						onChange={setAllergensFilter}
+						label='Filter by allergens'
+						placeholder='Select allergens from the list'
+						clearable
+					/>
+				</Grid.Col>
+				<Grid.Col>
+					<MultiSelect
+						mb={'md'}
+						data={lifestyles.sort().map(all => ({
+							label: all.toLowerCase().replace(/\b(\w)/g, s => s.toUpperCase()),
+							value: all
+						}))}
+						onChange={setLifestyleFilter}
+						disabled={lifestyles.length === 0}
+						label='Filter by lifestyle'
+						placeholder='Select lifestyles from the list'
+						clearable
+					/>
+				</Grid.Col>
+				{dishes.map(dish => (
 					<DishCard
 						key={dish.id}
 						dish={dish}
@@ -121,6 +169,8 @@ export async function getServerSideProps({
 	]);
 
 	let serverData = {};
+	const lifestyles = new Set<string>();
+
 	if (restaurantsData.exists()) {
 		const data = restaurantsData.val() as RestaurantData;
 		const allergens = allergensData.val();
@@ -165,40 +215,50 @@ export async function getServerSideProps({
 			description: data.metaDescription || '',
 			allergens,
 			name: data.name,
-			dishesData: dishesData.map(([key, dish]) => ({
-				id: key,
-				dishName: dish.dishName,
-				description: dish.description,
-				price: dish.price,
-				...Object.keys(dish)
-					.filter(key => key.match(/lifestyle|ingredient|health/) || key in allergens)
-					.reduce(
-						(prev, curr) => {
-							return {
-								...prev,
-								lifestyle: curr.match(/lifestyle/)
-									? [...prev.lifestyle, dish[curr]]
-									: prev.lifestyle,
-								healthTags: curr.match(/health/)
-									? [...prev.healthTags, dish[curr]]
-									: prev.healthTags,
-								hasIngredients: prev.hasIngredients || Boolean(curr.match(/ingredient/)),
-								allergens: curr in allergens ? [...prev.allergens, curr] : prev.allergens
-							};
-						},
-						{
-							lifestyle: [],
-							healthTags: [],
-							hasIngredients: false,
-							allergens: []
-						} as Record<string, any>
-					)
-			}))
+			dishesData: dishesData.map(([key, dish]) => {
+				const dishData = {
+					id: key,
+					dishName: dish.dishName,
+					description: dish.description,
+					price: dish.price,
+					...Object.keys(dish)
+						.filter(key => key.match(/lifestyle|ingredient|health/) || key in allergens)
+						.reduce(
+							(prev, curr) => {
+								return {
+									...prev,
+									lifestyle: curr.match(/lifestyle/)
+										? [...prev.lifestyle, dish[curr]]
+										: prev.lifestyle,
+									healthTags: curr.match(/health/)
+										? [...prev.healthTags, dish[curr]]
+										: prev.healthTags,
+									hasIngredients:
+										prev.hasIngredients || Boolean(curr.match(/ingredient/)),
+									allergens:
+										curr in allergens ? [...prev.allergens, curr] : prev.allergens
+								};
+							},
+							{
+								lifestyle: [],
+								healthTags: [],
+								hasIngredients: false,
+								allergens: []
+							} as Record<string, any>
+						)
+				};
+				// @ts-ignore
+				dishData.lifestyle.forEach(lifestyles.add, lifestyles);
+				return dishData;
+			})
 		};
 	}
 	return {
 		props: {
-			data: serverData
+			data: {
+				...serverData,
+				lifestyles: [...lifestyles]
+			}
 		}
 	};
 }

@@ -13,10 +13,10 @@ import {
 import DishCard from '../../components/DishCard';
 import { createFirebaseApp } from '../../firebase/clientApp';
 import { Dish, DishInfo, RestaurantData } from '../../interfaces/dishesInterface';
-import { start } from 'repl';
-import Head from 'next/head';
 import SEO from '../../components/SEO';
 import { NextApiRequest, NextApiResponse } from 'next';
+import { useEffect } from 'react';
+import { useRouter } from 'next/router';
 // import { getDownloadURL, getStorage, ref as storageRef } from '@firebase/storage';
 type Props = {
 	data: {
@@ -29,6 +29,15 @@ type Props = {
 
 const Restaurant = ({ data }: Props) => {
 	const { title, description, name, dishesData } = data;
+	const router = useRouter();
+
+	useEffect(() => {
+		const inIframe = window === window.top;
+		if (inIframe && location.hostname !== 'localhost') {
+			router.push('/404');
+		}
+	}, [router]);
+
 	return (
 		<>
 			<SEO title={title} description={description} />

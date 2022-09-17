@@ -15,7 +15,7 @@ import { createFirebaseApp } from '../../firebase/clientApp';
 import { Dish, DishInfo, RestaurantData } from '../../interfaces/dishesInterface';
 import SEO from '../../components/SEO';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 // import { getDownloadURL, getStorage, ref as storageRef } from '@firebase/storage';
 type Props = {
@@ -36,7 +36,7 @@ const Restaurant = ({ data }: Props) => {
 	const [allergensFilter, setAllergensFilter] = useState<string[]>([]);
 	const [lifestylesFilter, setLifestyleFilter] = useState<string[]>([]);
 
-	useEffect(() => {
+	useLayoutEffect(() => {
 		const inIframe = window === window.top;
 		if (inIframe && location.hostname !== 'localhost') {
 			router.push('/404');

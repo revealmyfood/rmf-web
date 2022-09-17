@@ -68,6 +68,8 @@ export async function getServerSideProps({
 		)
 	);
 
+	console.log('ORIGIN', req.headers.origin);
+
 	const allergensDataProm = get(dbRef(ref, '/allergenAssetPath'));
 	const [restaurantsData, allergensData] = await Promise.all([
 		restaurantsDataProm,
@@ -90,7 +92,14 @@ export async function getServerSideProps({
 	if (restaurantsData.exists()) {
 		const data = restaurantsData.val() as RestaurantData;
 		const allergens = allergensData.val();
-
+		if (data.accessKey !== query.u) {
+			return {
+				redirect: {
+					destination: '/404',
+					permanent: false
+				}
+			};
+		}
 		const restaurantData = data.dishItems.menu;
 		const dishesData: [string, Dish][] = Object.entries(restaurantData);
 

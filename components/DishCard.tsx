@@ -11,22 +11,13 @@ import {
 	Chip,
 	Accordion,
 	Loader,
-	Container,
 	Center
 } from '@mantine/core';
 import { IconCircle, IconCell, IconApple } from '@tabler/icons';
 import { DishInfo } from '../interfaces/dishesInterface';
 import { useQuery } from '@tanstack/react-query';
-import { createFirebaseApp, createFirebaseDb } from '../firebase/clientApp';
-import {
-	ref as dbRef,
-	equalTo,
-	get,
-	getDatabase,
-	orderByChild,
-	query
-} from 'firebase/database';
 import { useRouter } from 'next/router';
+import axios from 'axios';
 
 const IngredientAccordion = ({
 	dishId,
@@ -36,25 +27,14 @@ const IngredientAccordion = ({
 	hasIngredients: boolean;
 }) => {
 	const {
-		query: { restaurant }
+		query: { restaurant, u }
 	} = useRouter();
 
 	const [enableRequest, setEnableRequest] = React.useState(false);
 	const { data: dishInfo = {}, isLoading } = useQuery(
 		['dishInfo', restaurant, dishId],
-		async () => {
-			const app = createFirebaseApp();
-			const ref = getDatabase(app);
-			const menu = await get(
-				dbRef(
-					ref,
-					`/multiRestaurantUniverse/reveal_restaurant_partners/menuLists/${restaurant}/dishItems/menu/${dishId}`
-				)
-			);
-			if (menu.exists()) {
-				return menu.val();
-			}
-		},
+		async () =>
+			axios.get(`/api/dishes/${restaurant}/${dishId}?u=${u}`).then(res => res.data),
 		{ enabled: enableRequest, suspense: false }
 	);
 

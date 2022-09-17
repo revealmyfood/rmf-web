@@ -18,7 +18,15 @@ export default function List({ restaurants }: Props) {
 		<Grid grow>
 			{restaurants.map((restaurant: Restaurant, index: number) => (
 				<Grid.Col md={6} xs={12} key={index}>
-					<Link href='/restaurants/[restaurant]' as={`/restaurants/${restaurant.key}`}>
+					<Link
+						href={{
+							pathname: '/restaurants/[restaurant]',
+							query: {
+								restaurant: restaurant.key,
+								u: restaurant.accessKey
+							}
+						}}
+					>
 						<Card withBorder shadow='sm' radius='md'>
 							<Card.Section withBorder inheritPadding py='xs'>
 								<Text weight={500}>{restaurant.name.toString()}</Text>
@@ -47,7 +55,8 @@ export async function getStaticProps() {
 		let data = restaurantsData.val();
 		restaurants = Object.entries(data).map(([k, d]) => ({
 			key: k,
-			name: d.name
+			name: d.name,
+			accessKey: d.accessKey || ''
 		}));
 	}
 

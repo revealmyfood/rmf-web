@@ -1,12 +1,17 @@
 // @ts-nocheck
 
 import React from 'react';
-import { Button, Card, Grid, Text } from '@mantine/core';
+import { Button, Card, Container, Grid, Group, Text } from '@mantine/core';
 import { child, get } from 'firebase/database';
 import { createFirebaseApp, createFirebaseDb } from '../../firebase/clientApp';
 import Link from 'next/link';
 import { Dish } from '../../interfaces/dishesInterface';
 import { Restaurant } from '../../interfaces/restaurantsInterface';
+import { GetServerSideProps, GetServerSidePropsContext } from 'next';
+import useFirebaseAuth from '../../hook/useFirebaseAuth';
+import nookies from 'nookies';
+import { getAuth } from 'firebase/auth';
+import { firebaseAdmin } from '../../firebase/firebaseAdmin';
 
 type Props = {
 	restaurants: Restaurant[];
@@ -14,38 +19,58 @@ type Props = {
 };
 
 export default function List({ restaurants }: Props) {
+	const { signOut } = useFirebaseAuth();
 	return (
-		<Grid grow>
-			{restaurants.map((restaurant: Restaurant, index: number) => (
-				<Grid.Col md={6} xs={12} key={index}>
-					<Link
-						href={{
-							pathname: '/restaurants/[restaurant]',
-							query: {
-								restaurant: restaurant.key,
-								u: restaurant.accessKey
-							}
-						}}
-					>
-						<Card withBorder shadow='sm' radius='md'>
-							<Card.Section withBorder inheritPadding py='xs'>
-								<Text weight={500}>{restaurant.name.toString()}</Text>
-							</Card.Section>
-							<Button variant='light' fullWidth mt='md' radius='md'>
-								Menu
-							</Button>
-						</Card>
-					</Link>
-				</Grid.Col>
-			))}
-		</Grid>
+		<>
+			<Group position={'right'} mb={'lg'}>
+				<Button onClick={signOut}>Sign out</Button>
+			</Group>
+			<Grid grow>
+				{restaurants.map((restaurant: Restaurant, index: number) => (
+					<Grid.Col md={6} xs={12} key={index}>
+						<Link
+							href={{
+								pathname: '/restaurants/[restaurant]',
+								query: {
+									restaurant: restaurant.key,
+									u: restaurant.accessKey
+								}
+							}}
+						>
+							<Card withBorder shadow='sm' radius='md'>
+								<Card.Section withBorder inheritPadding py='xs'>
+									<Text weight={500}>{restaurant.name.toString()}</Text>
+								</Card.Section>
+								<Button variant='light' fullWidth mt='md' radius='md'>
+									Menu
+								</Button>
+							</Card>
+						</Link>
+					</Grid.Col>
+				))}
+			</Grid>
+		</>
 	);
 }
 
-export async function getStaticProps() {
+export async function getServerSideProps(ctx: GetServerSidePropsContext) {
+	try {
+		const cookies = nookies.get(ctx);
+		await firebaseAdmin.auth().verifyIdToken(cookies.token);
+	} catch (error) {
+		// either the `token` cookie didn't exist
+		// or token verification failed
+		// either way: redirect to the login page
+		return {
+			redirect: {
+				destination: '/',
+				permanent: false
+			}
+		};
+	}
+
 	const app = createFirebaseApp();
 	const ref = createFirebaseDb(app);
-
 	const restaurantsData = await get(
 		child(ref, '/multiRestaurantUniverse/reveal_restaurant_partners/menuLists')
 	);

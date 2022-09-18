@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const ContentSecurityPolicy = `
-  default-src 'self' 'unsafe-inline';
+  default-src 'self' 'unsafe-inline' *.googleapis.com *.google-analytics.com;
   script-src 'self' 'unsafe-inline' 'unsafe-eval' *.google-analytics.com *.googletagmanager.com;
   font-src 'self';  
 `;

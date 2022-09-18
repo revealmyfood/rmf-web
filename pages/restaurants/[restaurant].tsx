@@ -17,6 +17,10 @@ import SEO from '../../components/SEO';
 import { NextApiRequest, NextApiResponse } from 'next';
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { useRouter } from 'next/router';
+import nookies from 'nookies';
+import { firebaseAdmin } from '../../firebase/firebaseAdmin';
+import useIsomorphicLayoutEffect from '../../hook/useIsomorphicLayoutEffect';
+import useFirebaseAuth from '../../hook/useFirebaseAuth';
 // import { getDownloadURL, getStorage, ref as storageRef } from '@firebase/storage';
 type Props = {
 	data: {
@@ -31,17 +35,17 @@ type Props = {
 
 const Restaurant = ({ data }: Props) => {
 	const { title, description, name, dishesData, allergens, lifestyles } = data;
-	const router = useRouter();
 	const [dishes, setDishes] = useState<DishInfo[]>(dishesData);
 	const [allergensFilter, setAllergensFilter] = useState<string[]>([]);
 	const [lifestylesFilter, setLifestyleFilter] = useState<string[]>([]);
+	const { authState } = useFirebaseAuth();
 
-	useLayoutEffect(() => {
+	useIsomorphicLayoutEffect(() => {
 		const inIframe = window === window.top;
-		if (inIframe && location.hostname !== 'localhost') {
-			router.push('/404');
+		if (inIframe && location.hostname !== 'localhost' && !authState.authUser) {
+			window.location.href = '/404';
 		}
-	}, [router]);
+	}, [authState]);
 
 	useEffect(() => {
 		let filteredDishes = dishesData;
@@ -117,38 +121,27 @@ const Restaurant = ({ data }: Props) => {
 };
 
 const ContentSecurityPolicy = (src: string) => `
-  default-src 'self' 'unsafe-inline' ${src};
+  default-src 'self' 'unsafe-inline' ${src} *.googleapis.com *.google-analytics.com;
   script-src 'self' 'unsafe-inline' 'unsafe-eval' *.google-analytics.com *.googletagmanager.com ${src};
   font-src 'self' ${src};;  
 `;
 
-export async function getServerSideProps({
-	query,
-	req,
-	res
-}: {
+export async function getServerSideProps(ctx: {
 	req: NextApiRequest;
 	res: NextApiResponse;
 	query: { restaurant: string; u: string };
 }) {
+	const { res, query } = ctx;
 	// const storage = getStorage(app);
 	const app = createFirebaseApp();
 	const ref = getDatabase(app);
+
 	const restaurantsDataProm = get(
 		dbRef(
 			ref,
 			`/multiRestaurantUniverse/reveal_restaurant_partners/menuLists/${query.restaurant}`
 		)
 	);
-	// res.setHeader('Access-Control-Allow-Origin', '*');
-	//
-	// res.setHeader(
-	// 	'Access-Control-Allow-Headers',
-	// 	'Origin, X-Requested-With, Content-Type, Accept, Authorization'
-	// );
-	// if (req.method == 'OPTIONS') {
-	// 	res.setHeader('Access-Control-Allow-Methods', 'PUT, POST, PATCH, DELETE, GET');
-	// }
 
 	const allergensDataProm = get(dbRef(ref, '/allergenAssetPath'));
 	const [restaurantsData, allergensData] = await Promise.all([
@@ -175,20 +168,7 @@ export async function getServerSideProps({
 		const data = restaurantsData.val() as RestaurantData;
 		const allergens = allergensData.val();
 
-		let isNotValid: boolean = false;
-
-		// if (origin) { TODO - check origin because we can't receive it from <object> tag
-		// 	const originUrl = new URL(origin);
-		// 	if (originUrl.hostname !== 'localhost' && data.origin !== originUrl.origin) {
-		// 		isNotValid = true;
-		// 	}
-		// } else if (headers.host !== 'localhost:3000') {
-		// 	isNotValid = true;
-		// }
 		if ((data.accessKey || '') !== query.u) {
-			isNotValid = true;
-		}
-		if (isNotValid) {
 			return {
 				redirect: {
 					destination: '/404',

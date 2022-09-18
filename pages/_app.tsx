@@ -4,6 +4,14 @@ import Layout from '../components/layout';
 import '../styles/globals.css';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
+import { RecoilRoot } from 'recoil';
+import useFirebaseAuth from '../hook/useFirebaseAuth';
+import { ReactNode } from 'react';
+
+const Auth = ({ children }: { children: ReactNode }) => {
+	useFirebaseAuth();
+	return <>{children}</>;
+};
 
 export default function App(props: AppProps) {
 	const { Component, pageProps } = props;
@@ -27,9 +35,13 @@ export default function App(props: AppProps) {
 					primaryShade: 8
 				}}
 			>
-				<Layout>
-					<Component {...pageProps} />
-				</Layout>
+				<RecoilRoot>
+					<Layout>
+						<Auth>
+							<Component {...pageProps} />
+						</Auth>
+					</Layout>
+				</RecoilRoot>
 			</MantineProvider>
 			<ReactQueryDevtools />
 		</QueryClientProvider>

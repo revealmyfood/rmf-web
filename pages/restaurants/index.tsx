@@ -1,16 +1,15 @@
 // @ts-nocheck
 
 import React from 'react';
-import { Button, Card, Container, Grid, Group, Text } from '@mantine/core';
+import { Button, Card, Grid, Group, Text } from '@mantine/core';
 import { child, get } from 'firebase/database';
 import { createFirebaseApp, createFirebaseDb } from '../../firebase/clientApp';
 import Link from 'next/link';
 import { Dish } from '../../interfaces/dishesInterface';
 import { Restaurant } from '../../interfaces/restaurantsInterface';
-import { GetServerSideProps, GetServerSidePropsContext } from 'next';
+import { GetServerSidePropsContext } from 'next';
 import useFirebaseAuth from '../../hook/useFirebaseAuth';
 import nookies from 'nookies';
-import { getAuth } from 'firebase/auth';
 import { firebaseAdmin } from '../../firebase/firebaseAdmin';
 
 type Props = {

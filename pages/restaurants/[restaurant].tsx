@@ -1,29 +1,17 @@
 import { Container, Grid, MultiSelect, Text } from '@mantine/core';
-import {
-	get,
-	child,
-	query as dbQuery,
-	equalTo,
-	orderByChild,
-	ref as dbRef,
-	getDatabase,
-	startAt,
-	orderByValue
-} from 'firebase/database';
+import { get, ref as dbRef, getDatabase } from 'firebase/database';
 import DishCard from '../../components/DishCard';
 import { createFirebaseApp } from '../../firebase/clientApp';
 import { Dish, DishInfo, RestaurantData } from '../../interfaces/dishesInterface';
 import SEO from '../../components/SEO';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { useEffect, useLayoutEffect, useState } from 'react';
-import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 import nookies from 'nookies';
 import { firebaseAdmin } from '../../firebase/firebaseAdmin';
-import useIsomorphicLayoutEffect from '../../hook/useIsomorphicLayoutEffect';
-import useFirebaseAuth from '../../hook/useFirebaseAuth';
 // import { getDownloadURL, getStorage, ref as storageRef } from '@firebase/storage';
 type Props = {
 	data: {
+		authenticated: boolean;
 		title: string;
 		description: string;
 		name: string;
@@ -34,18 +22,11 @@ type Props = {
 };
 
 const Restaurant = ({ data }: Props) => {
-	const { title, description, name, dishesData, allergens, lifestyles } = data;
+	const { title, description, name, dishesData, allergens, lifestyles, authenticated } =
+		data;
 	const [dishes, setDishes] = useState<DishInfo[]>(dishesData);
 	const [allergensFilter, setAllergensFilter] = useState<string[]>([]);
 	const [lifestylesFilter, setLifestyleFilter] = useState<string[]>([]);
-	const { authState } = useFirebaseAuth();
-
-	useIsomorphicLayoutEffect(() => {
-		const inIframe = window === window.top;
-		if (inIframe && location.hostname !== 'localhost' && !authState.authUser) {
-			window.location.href = '/404';
-		}
-	}, [authState]);
 
 	useEffect(() => {
 		let filteredDishes = dishesData;
@@ -62,6 +43,14 @@ const Restaurant = ({ data }: Props) => {
 
 		setDishes(filteredDishes);
 	}, [allergensFilter, dishesData, lifestylesFilter]);
+
+	if (typeof window !== 'undefined' && !authenticated) {
+		const inIframe = window === window.top;
+		if (inIframe && location.hostname !== 'localhost') {
+			window.location.href = '/404';
+			return null;
+		}
+	}
 
 	return (
 		<>
@@ -190,7 +179,17 @@ export async function getServerSideProps(ctx: {
 		const restaurantData = data.dishItems.menu;
 		const dishesData: [string, Dish][] = Object.entries(restaurantData);
 
+		let authenticated;
+		try {
+			const cookies = nookies.get(ctx);
+			await firebaseAdmin.auth().verifyIdToken(cookies.token);
+			authenticated = true;
+		} catch (error) {
+			authenticated = false;
+		}
+
 		serverData = {
+			authenticated,
 			title: `Menu ${data.name}`,
 			description: data.metaDescription || '',
 			allergens,

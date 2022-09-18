@@ -12,12 +12,6 @@ import { createFirebaseApp } from '../firebase/clientApp';
 
 const useFirebaseAuth = () => {
 	const [authState, setAuthState] = useRecoilState(authAtom);
-	const clear = useCallback(() => {
-		setAuthState({
-			authUser: null,
-			loading: false
-		});
-	}, [setAuthState]);
 
 	const signInWithEmailAndPassword = useCallback((email: string, password: string) => {
 		const app = createFirebaseApp();
@@ -25,8 +19,15 @@ const useFirebaseAuth = () => {
 	}, []);
 
 	const signOut = useCallback(
-		() => firebaseSignOut(getAuth(createFirebaseApp())).then(clear),
-		[clear]
+		() =>
+			firebaseSignOut(getAuth(createFirebaseApp())).then(() => {
+				setAuthState({
+					authUser: null,
+					loading: false
+				});
+				window.location.href = '/';
+			}),
+		[setAuthState]
 	);
 
 	const authStateChanged = useCallback(

@@ -1,13 +1,23 @@
-import { Container, Grid, MultiSelect, Text } from '@mantine/core';
+import {
+	Box,
+	CloseButton,
+	Grid,
+	MultiSelect,
+	MultiSelectValueProps,
+	SelectItemProps,
+	Text,
+	Image
+} from '@mantine/core';
 import { get, ref as dbRef, getDatabase } from 'firebase/database';
 import DishCard from '../../components/DishCard';
 import { createFirebaseApp } from '../../firebase/clientApp';
 import { Dish, DishInfo, RestaurantData } from '../../interfaces/dishesInterface';
 import SEO from '../../components/SEO';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { useEffect, useState } from 'react';
+import { forwardRef, memo, useEffect, useMemo, useState } from 'react';
 import nookies from 'nookies';
 import { firebaseAdmin } from '../../firebase/firebaseAdmin';
+// import Image from 'next/image';
 // import { getDownloadURL, getStorage, ref as storageRef } from '@firebase/storage';
 type Props = {
 	data: {
@@ -20,6 +30,74 @@ type Props = {
 		lifestyles: string[];
 	};
 };
+
+const Value = memo(
+	({
+		allergens,
+		value,
+		label,
+		onRemove,
+		classNames,
+		...others
+	}: MultiSelectValueProps & { value: string; allergens: { [key: string]: string } }) => {
+		const allergen = useMemo(() => allergens[value], [value, allergens]);
+		return (
+			<div {...others}>
+				<Box
+					sx={theme => ({
+						display: 'flex',
+						cursor: 'default',
+						alignItems: 'center',
+						backgroundColor:
+							theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white,
+						border: `1px solid ${
+							theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[4]
+						}`,
+						paddingLeft: 10,
+						borderRadius: 4
+					})}
+				>
+					<Box mr={10}>
+						<Image alt={value} src={'/' + allergen} height={20} width={20} />
+					</Box>
+					<Box sx={{ lineHeight: 1, fontSize: 12 }}>{label}</Box>
+					<CloseButton
+						onMouseDown={onRemove}
+						variant='transparent'
+						size={22}
+						iconSize={14}
+						tabIndex={-1}
+					/>
+				</Box>
+			</div>
+		);
+	},
+	(prevProps, nextProps) =>
+		prevProps.value === nextProps.value && prevProps.allergens === nextProps.allergens
+);
+Value.displayName = 'MultivalueItem';
+
+const Item = memo(
+	forwardRef<HTMLDivElement, SelectItemProps & { allergens: { [key: string]: string } }>(
+		({ allergens, label, value, ...others }, ref) => {
+			const allergen = useMemo(() => allergens[value as string], [allergens, value]);
+
+			return (
+				<div ref={ref} {...others}>
+					<Box sx={{ display: 'flex', alignItems: 'center' }}>
+						<Box mr={10} sx={{ display: 'flex', alignItems: 'center' }}>
+							<Image alt={value} src={'/' + allergen} width={20} height={20} />
+						</Box>
+						<div>{label}</div>
+					</Box>
+				</div>
+			);
+		}
+	),
+	(prevProps, nextProps) =>
+		prevProps.value === nextProps.value && prevProps.allergens === nextProps.allergens
+);
+Item.displayName = 'MultiSelectItem';
 
 const Restaurant = ({ data }: Props) => {
 	const { title, description, name, dishesData, allergens, lifestyles, authenticated } =
@@ -74,6 +152,8 @@ const Restaurant = ({ data }: Props) => {
 								label: all.toLowerCase().replace(/\b(\w)/g, s => s.toUpperCase()),
 								value: all
 							}))}
+						itemComponent={props => <Item allergens={allergens} {...props} />}
+						valueComponent={props => <Value {...props} allergens={allergens} />}
 						onChange={setAllergensFilter}
 						label='Filter by allergens'
 						placeholder='Select allergens from the list'

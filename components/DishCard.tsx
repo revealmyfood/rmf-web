@@ -215,41 +215,6 @@ const DishCard = ({ dish, allergens, healthTags, hasIngredients, lifestyle }: Pr
 							/>
 						</Accordion>
 					</Card.Section>
-
-					{/* Allergens */}
-					{/*<Card.Section withBorder inheritPadding py='xs'>*/}
-					{/*	{allergens.length ? (*/}
-					{/*		<List*/}
-					{/*			spacing='xs'*/}
-					{/*			size='md'*/}
-					{/*			center*/}
-					{/*			icon={*/}
-					{/*				<ThemeIcon variant='light' color='red' size={24} radius='xl'>*/}
-					{/*					<IconCircle size={16} />*/}
-					{/*				</ThemeIcon>*/}
-					{/*			}*/}
-					{/*		>*/}
-					{/*			{allergens.map(allergen => (*/}
-					{/*				<List.Item key={allergen.name}>*/}
-					{/*					<Text transform={'capitalize'}>{allergen.name}</Text>*/}
-					{/*				</List.Item>*/}
-					{/*			))}*/}
-					{/*		</List>*/}
-					{/*	) : (*/}
-					{/*		<List*/}
-					{/*			spacing='xs'*/}
-					{/*			size='md'*/}
-					{/*			center*/}
-					{/*			icon={*/}
-					{/*				<ThemeIcon variant='filled' color='green' size={24} radius='xl'>*/}
-					{/*					<IconCircle size={16} />*/}
-					{/*				</ThemeIcon>*/}
-					{/*			}*/}
-					{/*		>*/}
-					{/*			<List.Item>No allergens</List.Item>*/}
-					{/*		</List>*/}
-					{/*	)}*/}
-					{/*</Card.Section>*/}
 				</Card>
 			</Grid.Col>
 		</>

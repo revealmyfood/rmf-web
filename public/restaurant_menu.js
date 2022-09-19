@@ -7,14 +7,10 @@ document.onreadystatechange = () => {
 			const name = container.dataset.name;
 			if (key && name) {
 				const baseUrl = scriptSrc.replace('/restaurant_menu.js', '');
-				fetch(`${baseUrl}/restaurants/${name}?u=${key}`)
-					.then(res => res.text())
-					.then(html => {
-						container.innerHTML = `<object
+				container.innerHTML = `<object
              width='100%'
              height='100%'
-             data="data:text/html,${encodeURIComponent(html)}"></object>`;
-					});
+             data="${baseUrl}/restaurants/${name}?u=${key}"></object>`;
 			}
 		}
 	}

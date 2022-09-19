@@ -6,7 +6,10 @@ import {
 	MultiSelectValueProps,
 	SelectItemProps,
 	Text,
-	Image
+	Image,
+	Accordion,
+	Chip,
+	createStyles
 } from '@mantine/core';
 import { get, ref as dbRef, getDatabase } from 'firebase/database';
 import DishCard from '../../components/DishCard';
@@ -14,7 +17,7 @@ import { createFirebaseApp } from '../../firebase/clientApp';
 import { Dish, DishInfo, RestaurantData } from '../../interfaces/dishesInterface';
 import SEO from '../../components/SEO';
 import { NextApiRequest, NextApiResponse } from 'next';
-import { forwardRef, memo, useEffect, useMemo, useState } from 'react';
+import React, { forwardRef, memo, useEffect, useMemo, useState } from 'react';
 import nookies from 'nookies';
 import { firebaseAdmin } from '../../firebase/firebaseAdmin';
 // import Image from 'next/image';
@@ -28,89 +31,47 @@ type Props = {
 		dishesData: DishInfo[];
 		allergens: { [key: string]: string }[];
 		lifestyles: string[];
+		healthTags: string[];
 	};
 };
 
-const Value = memo(
-	({
-		allergens,
-		value,
-		label,
-		onRemove,
-		classNames,
-		...others
-	}: MultiSelectValueProps & { value: string; allergens: { [key: string]: string } }) => {
-		const allergen = useMemo(() => allergens[value], [value, allergens]);
-		return (
-			<div {...others}>
-				<Box
-					sx={theme => ({
-						display: 'flex',
-						cursor: 'default',
-						alignItems: 'center',
-						backgroundColor:
-							theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.white,
-						border: `1px solid ${
-							theme.colorScheme === 'dark' ? theme.colors.dark[7] : theme.colors.gray[4]
-						}`,
-						paddingLeft: 10,
-						borderRadius: 4
-					})}
-				>
-					<Box mr={10}>
-						<Image alt={value} src={'/' + allergen} height={20} width={20} />
-					</Box>
-					<Box sx={{ lineHeight: 1, fontSize: 12 }}>{label}</Box>
-					<CloseButton
-						onMouseDown={onRemove}
-						variant='transparent'
-						size={22}
-						iconSize={14}
-						tabIndex={-1}
-					/>
-				</Box>
-			</div>
-		);
+const useStyles = createStyles((theme, _params) => ({
+	input: {
+		display: 'none'
 	},
-	(prevProps, nextProps) =>
-		prevProps.value === nextProps.value && prevProps.allergens === nextProps.allergens
-);
-Value.displayName = 'MultivalueItem';
-
-const Item = memo(
-	forwardRef<HTMLDivElement, SelectItemProps & { allergens: { [key: string]: string } }>(
-		({ allergens, label, value, ...others }, ref) => {
-			const allergen = useMemo(() => allergens[value as string], [allergens, value]);
-
-			return (
-				<div ref={ref} {...others}>
-					<Box sx={{ display: 'flex', alignItems: 'center' }}>
-						<Box mr={10} sx={{ display: 'flex', alignItems: 'center' }}>
-							<Image alt={value} src={'/' + allergen} width={20} height={20} />
-						</Box>
-						<div>{label}</div>
-					</Box>
-				</div>
-			);
-		}
-	),
-	(prevProps, nextProps) =>
-		prevProps.value === nextProps.value && prevProps.allergens === nextProps.allergens
-);
-Item.displayName = 'MultiSelectItem';
+	label: {
+		display: 'flex'
+	}
+}));
 
 const Restaurant = ({ data }: Props) => {
-	const { title, description, name, dishesData, allergens, lifestyles, authenticated } =
-		data;
+	const {
+		title,
+		description,
+		name,
+		dishesData,
+		allergens,
+		lifestyles,
+		authenticated,
+		healthTags
+	} = data;
 	const [dishes, setDishes] = useState<DishInfo[]>(dishesData);
 	const [allergensFilter, setAllergensFilter] = useState<string[]>([]);
+	const [healthTagsFilter, setHealthTagsFilter] = useState<string[]>([]);
 	const [lifestylesFilter, setLifestyleFilter] = useState<string[]>([]);
+	const { classes } = useStyles();
 
 	useEffect(() => {
 		let filteredDishes = dishesData;
 		if (allergensFilter.length > 0) {
 			filteredDishes = dishesData.filter(
 				dish => !dish.allergens.some(allergen => allergensFilter.includes(allergen.name))
+			);
+		}
+
+		if (healthTagsFilter.length > 0) {
+			filteredDishes = dishesData.filter(dish =>
+				dish.healthTags.some(healthTag => healthTagsFilter.includes(healthTag))
 			);
 		}
 		if (lifestylesFilter.length > 0) {
@@ -120,7 +81,7 @@ const Restaurant = ({ data }: Props) => {
 		}
 
 		setDishes(filteredDishes);
-	}, [allergensFilter, dishesData, lifestylesFilter]);
+	}, [allergensFilter, dishesData, healthTagsFilter, lifestylesFilter]);
 
 	if (typeof window !== 'undefined' && !authenticated) {
 		const inIframe = window === window.top;
@@ -134,46 +95,93 @@ const Restaurant = ({ data }: Props) => {
 		<>
 			<SEO title={title} description={description} />
 			<Grid grow>
-				<Text
-					px='sm'
-					py='lg'
-					variant='gradient'
-					size={40}
-					weight={700}
-					gradient={{ from: 'teal', to: 'lime', deg: 105 }}
-				>
-					{name}
-				</Text>
-				<Grid.Col>
-					<MultiSelect
-						data={Object.keys(allergens)
-							.sort()
-							.map(all => ({
+				<Grid.Col span={12}>
+					<Text
+						px='sm'
+						py='lg'
+						variant='gradient'
+						size={40}
+						weight={700}
+						gradient={{ from: 'teal', to: 'lime', deg: 105 }}
+					>
+						{name}
+					</Text>
+				</Grid.Col>
+				<Grid.Col sm={6} md={4}>
+					<Accordion
+						chevronPosition='left'
+						defaultValue='customization'
+						variant='default'
+					>
+						<Accordion.Item value='nutrients'>
+							<Accordion.Control>Allergens</Accordion.Control>
+							<Accordion.Panel>
+								<Chip.Group
+									value={allergensFilter}
+									onChange={setAllergensFilter}
+									position='left'
+									multiple
+								>
+									{Object.entries(allergens)
+										.sort()
+										.map(([all, image]) => (
+											<Chip classNames={classes} variant={'filled'} value={all} key={all}>
+												<Box sx={{ display: 'flex', alignItems: 'center' }}>
+													<Box mr={10} sx={{ display: 'flex', alignItems: 'center' }}>
+														<Image alt={all} src={'/' + image} width={20} height={20} />
+													</Box>
+													<Text>{all}</Text>
+												</Box>
+											</Chip>
+										))}
+								</Chip.Group>
+							</Accordion.Panel>
+						</Accordion.Item>
+					</Accordion>
+				</Grid.Col>
+				{healthTags.length > 0 && (
+					<Grid.Col sm={6} md={4}>
+						<Accordion
+							chevronPosition='left'
+							defaultValue='customization'
+							variant='default'
+						>
+							<Accordion.Item value='nutrients'>
+								<Accordion.Control>Health Claims</Accordion.Control>
+								<Accordion.Panel>
+									<Chip.Group
+										value={healthTagsFilter}
+										onChange={value => setHealthTagsFilter(value.slice(-2))}
+										position='left'
+										multiple
+									>
+										{healthTags.sort().map(h => (
+											<Chip classNames={classes} variant={'filled'} value={h} key={h}>
+												<Text>{h}</Text>
+											</Chip>
+										))}
+									</Chip.Group>
+								</Accordion.Panel>
+							</Accordion.Item>
+						</Accordion>
+					</Grid.Col>
+				)}
+				{lifestyles.length > 0 && (
+					<Grid.Col sm={6} md={4}>
+						<MultiSelect
+							mb={'md'}
+							data={lifestyles.sort().map(all => ({
 								label: all.toLowerCase().replace(/\b(\w)/g, s => s.toUpperCase()),
 								value: all
 							}))}
-						itemComponent={props => <Item allergens={allergens} {...props} />}
-						valueComponent={props => <Value {...props} allergens={allergens} />}
-						onChange={setAllergensFilter}
-						label='Filter by allergens'
-						placeholder='Select allergens from the list'
-						clearable
-					/>
-				</Grid.Col>
-				<Grid.Col>
-					<MultiSelect
-						mb={'md'}
-						data={lifestyles.sort().map(all => ({
-							label: all.toLowerCase().replace(/\b(\w)/g, s => s.toUpperCase()),
-							value: all
-						}))}
-						onChange={setLifestyleFilter}
-						disabled={lifestyles.length === 0}
-						label='Filter by lifestyle'
-						placeholder='Select lifestyles from the list'
-						clearable
-					/>
-				</Grid.Col>
+							onChange={setLifestyleFilter}
+							disabled={lifestyles.length === 0}
+							label='Lifestyle'
+							placeholder='Select lifestyles from the list'
+							clearable
+						/>
+					</Grid.Col>
+				)}
 				{dishes.map(dish => (
 					<DishCard
 						key={dish.id}
@@ -190,7 +198,7 @@ const Restaurant = ({ data }: Props) => {
 };
 
 const ContentSecurityPolicy = (src: string) => `
-  default-src 'self' 'unsafe-inline' ${src} *.googleapis.com *.google-analytics.com;
+  default-src 'self' 'unsafe-inline' ${src} *.googleapis.com *.google-analytics.com *.vercel-insights.com;
   img-src 'self' data:;
   script-src 'self' 'unsafe-inline' 'unsafe-eval' *.google-analytics.com *.googletagmanager.com ${src};
   font-src 'self' ${src};;  
@@ -233,6 +241,7 @@ export async function getServerSideProps(ctx: {
 
 	let serverData = {};
 	const lifestyles = new Set<string>();
+	const healthTags = new Set<string>();
 
 	if (restaurantsData.exists()) {
 		const data = restaurantsData.val() as RestaurantData;
@@ -311,6 +320,8 @@ export async function getServerSideProps(ctx: {
 				};
 				// @ts-ignore
 				dishData.lifestyle.forEach(lifestyles.add, lifestyles);
+				// @ts-ignore
+				dishData.healthTags.forEach(healthTags.add, healthTags);
 				return dishData;
 			})
 		};
@@ -319,7 +330,8 @@ export async function getServerSideProps(ctx: {
 		props: {
 			data: {
 				...serverData,
-				lifestyles: [...lifestyles]
+				lifestyles: [...lifestyles],
+				healthTags: [...healthTags]
 			}
 		}
 	};

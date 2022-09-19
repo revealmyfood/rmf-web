@@ -18,11 +18,14 @@ import { DishInfo } from '../interfaces/dishesInterface';
 import { useQuery } from '@tanstack/react-query';
 import { useRouter } from 'next/router';
 import axios from 'axios';
+import Image from 'next/image';
 
 const IngredientAccordion = ({
+	allergens,
 	dishId,
 	hasIngredients
 }: {
+	allergens: { name: string; image: string }[];
 	dishId: string;
 	hasIngredients: boolean;
 }) => {
@@ -50,6 +53,28 @@ const IngredientAccordion = ({
 					) : (
 						<Card.Section withBorder inheritPadding py='xs'>
 							<Grid grow>
+								<Grid.Col span={12}>
+									<Group position='left' spacing={'sm'} my={'sm'}>
+										{allergens.map(a => (
+											<Badge
+												size='lg'
+												key={a.name}
+												variant='outline'
+												gradient={{ from: 'teal', to: 'lime', deg: 105 }}
+											>
+												<Center>
+													<Image
+														src={'/' + a.image}
+														alt={a.name}
+														width={20}
+														height={20}
+													/>
+													<Text ml={'xs'}>{a.name}</Text>
+												</Center>
+											</Badge>
+										))}
+									</Group>
+								</Grid.Col>
 								<Grid.Col span={12}>
 									<List
 										spacing='xs'
@@ -120,7 +145,7 @@ interface Props {
 	lifestyle: Array<string>;
 	healthTags: Array<string>;
 	hasIngredients: boolean;
-	allergens: Array<string>;
+	allergens: Array<{ name: string; image: string }>;
 }
 
 const DishCard = ({ dish, allergens, healthTags, hasIngredients, lifestyle }: Props) => {
@@ -183,44 +208,48 @@ const DishCard = ({ dish, allergens, healthTags, hasIngredients, lifestyle }: Pr
 							py={'sm'}
 						>
 							{/* Ingredients */}
-							<IngredientAccordion hasIngredients={hasIngredients} dishId={dish.id} />
+							<IngredientAccordion
+								allergens={allergens}
+								hasIngredients={hasIngredients}
+								dishId={dish.id}
+							/>
 						</Accordion>
 					</Card.Section>
 
 					{/* Allergens */}
-					<Card.Section withBorder inheritPadding py='xs'>
-						{allergens.length ? (
-							<List
-								spacing='xs'
-								size='md'
-								center
-								icon={
-									<ThemeIcon variant='light' color='red' size={24} radius='xl'>
-										<IconCircle size={16} />
-									</ThemeIcon>
-								}
-							>
-								{allergens.map(allergen => (
-									<List.Item key={allergen}>
-										<Text transform={'capitalize'}>{allergen}</Text>
-									</List.Item>
-								))}
-							</List>
-						) : (
-							<List
-								spacing='xs'
-								size='md'
-								center
-								icon={
-									<ThemeIcon variant='filled' color='green' size={24} radius='xl'>
-										<IconCircle size={16} />
-									</ThemeIcon>
-								}
-							>
-								<List.Item>No allergens</List.Item>
-							</List>
-						)}
-					</Card.Section>
+					{/*<Card.Section withBorder inheritPadding py='xs'>*/}
+					{/*	{allergens.length ? (*/}
+					{/*		<List*/}
+					{/*			spacing='xs'*/}
+					{/*			size='md'*/}
+					{/*			center*/}
+					{/*			icon={*/}
+					{/*				<ThemeIcon variant='light' color='red' size={24} radius='xl'>*/}
+					{/*					<IconCircle size={16} />*/}
+					{/*				</ThemeIcon>*/}
+					{/*			}*/}
+					{/*		>*/}
+					{/*			{allergens.map(allergen => (*/}
+					{/*				<List.Item key={allergen.name}>*/}
+					{/*					<Text transform={'capitalize'}>{allergen.name}</Text>*/}
+					{/*				</List.Item>*/}
+					{/*			))}*/}
+					{/*		</List>*/}
+					{/*	) : (*/}
+					{/*		<List*/}
+					{/*			spacing='xs'*/}
+					{/*			size='md'*/}
+					{/*			center*/}
+					{/*			icon={*/}
+					{/*				<ThemeIcon variant='filled' color='green' size={24} radius='xl'>*/}
+					{/*					<IconCircle size={16} />*/}
+					{/*				</ThemeIcon>*/}
+					{/*			}*/}
+					{/*		>*/}
+					{/*			<List.Item>No allergens</List.Item>*/}
+					{/*		</List>*/}
+					{/*	)}*/}
+					{/*</Card.Section>*/}
 				</Card>
 			</Grid.Col>
 		</>

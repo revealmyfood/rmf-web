@@ -16,7 +16,7 @@ type Props = {
 		description: string;
 		name: string;
 		dishesData: DishInfo[];
-		allergens: string[];
+		allergens: { [key: string]: string }[];
 		lifestyles: string[];
 	};
 };
@@ -31,8 +31,8 @@ const Restaurant = ({ data }: Props) => {
 	useEffect(() => {
 		let filteredDishes = dishesData;
 		if (allergensFilter.length > 0) {
-			filteredDishes = dishesData.filter(dish =>
-				dish.allergens.some(allergen => allergensFilter.includes(allergen))
+			filteredDishes = dishesData.filter(
+				dish => !dish.allergens.some(allergen => allergensFilter.includes(allergen.name))
 			);
 		}
 		if (lifestylesFilter.length > 0) {
@@ -111,6 +111,7 @@ const Restaurant = ({ data }: Props) => {
 
 const ContentSecurityPolicy = (src: string) => `
   default-src 'self' 'unsafe-inline' ${src} *.googleapis.com *.google-analytics.com;
+  img-src 'self' data:;
   script-src 'self' 'unsafe-inline' 'unsafe-eval' *.google-analytics.com *.googletagmanager.com ${src};
   font-src 'self' ${src};;  
 `;
@@ -215,7 +216,9 @@ export async function getServerSideProps(ctx: {
 									hasIngredients:
 										prev.hasIngredients || Boolean(curr.match(/ingredient/)),
 									allergens:
-										curr in allergens ? [...prev.allergens, curr] : prev.allergens
+										curr in allergens
+											? [...prev.allergens, { name: curr, image: allergens[curr] }]
+											: prev.allergens
 								};
 							},
 							{

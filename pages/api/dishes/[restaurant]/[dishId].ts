@@ -23,7 +23,7 @@ export default async function handler(
 	if (queryRef.exists()) {
 		const menu = queryRef.val();
 		const dish = menu.dishItems.menu[dishId as string];
-		if (menu.accessKey === u && dish) {
+		if ((menu.accessKey || '') === (u || '') && dish) {
 			res.status(200).json(dish);
 			return;
 		}

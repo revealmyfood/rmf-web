@@ -7,10 +7,15 @@ document.onreadystatechange = () => {
 			const name = container.dataset.name;
 			if (key && name) {
 				const baseUrl = scriptSrc.replace('/restaurant_menu.js', '');
-				container.innerHTML = `<object
-             width='100%'
-             height='100%'
-             data="${baseUrl}/restaurants/${name}?u=${key}"></object>`;
+				// container.innerHTML = `<object
+				//      width='100%'
+				//      height='100%'
+				//      data="${baseUrl}/restaurants/${name}?u=${key}"></object>`;
+				fetch(`${baseUrl}/restaurants/${name}?u=${key}`)
+					.then(res => res.text())
+					.then(html => {
+						container.innerHTML = html;
+					});
 			}
 		}
 	}

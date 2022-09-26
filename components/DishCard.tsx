@@ -150,74 +150,79 @@ interface Props {
 
 const DishCard = ({ dish, allergens, healthTags, hasIngredients, lifestyle }: Props) => {
 	return (
-		<>
-			<Grid.Col span={12}>
-				<Card withBorder shadow='sm' radius='md' p='md'>
-					<Card.Section inheritPadding p='md'>
-						<Group position='apart'>
-							<Title order={5}>{dish.dishName}</Title>
-							<Badge variant='filled' size='xl' radius='md'>
-								{dish.price} £
+		<Card
+			id={dish.id}
+			data-toc={2}
+			data-toc-title={dish.dishName}
+			withBorder
+			shadow='sm'
+			radius='md'
+			p='md'
+			m='xs'
+		>
+			<Card.Section inheritPadding p='md'>
+				<Group position='apart'>
+					<Title order={5}>{dish.dishName}</Title>
+					<Badge variant='filled' size='xl' radius='md'>
+						{dish.price} £
+					</Badge>
+				</Group>
+			</Card.Section>
+
+			<Card.Section withBorder inheritPadding py='xs'>
+				<Text weight={400}>{dish.description}</Text>
+			</Card.Section>
+
+			{/* Lifestyles */}
+			{lifestyle && (
+				<Card.Section inheritPadding py='xs' px='xs'>
+					<Group position='left' spacing={'sm'}>
+						{lifestyle.map(l => (
+							<Badge
+								size='lg'
+								key={l}
+								variant='gradient'
+								gradient={{ from: 'teal', to: 'lime', deg: 105 }}
+							>
+								{l}
 							</Badge>
-						</Group>
-					</Card.Section>
+						))}
+					</Group>
+				</Card.Section>
+			)}
 
-					<Card.Section withBorder inheritPadding py='xs'>
-						<Text weight={400}>{dish.description}</Text>
-					</Card.Section>
+			{/* Health Tags */}
+			{healthTags && (
+				<Card.Section withBorder inheritPadding py='xs'>
+					<Group position='left' spacing={'sm'}>
+						{healthTags.map(healthTag => (
+							<Chip checked size='sm' variant='filled' color='green' key={healthTag}>
+								{healthTag}
+							</Chip>
+						))}
+					</Group>
+				</Card.Section>
+			)}
 
-					{/* Lifestyles */}
-					{lifestyle && (
-						<Card.Section inheritPadding py='xs' px='xs'>
-							<Group position='left' spacing={'sm'}>
-								{lifestyle.map(l => (
-									<Badge
-										size='lg'
-										key={l}
-										variant='gradient'
-										gradient={{ from: 'teal', to: 'lime', deg: 105 }}
-									>
-										{l}
-									</Badge>
-								))}
-							</Group>
-						</Card.Section>
-					)}
-
-					{/* Health Tags */}
-					{healthTags && (
-						<Card.Section withBorder inheritPadding py='xs'>
-							<Group position='left' spacing={'sm'}>
-								{healthTags.map(healthTag => (
-									<Chip checked size='sm' variant='filled' color='green' key={healthTag}>
-										{healthTag}
-									</Chip>
-								))}
-							</Group>
-						</Card.Section>
-					)}
-
-					<Card.Section inheritPadding>
-						{/* <Text weight={500} size="md">
+			<Card.Section inheritPadding>
+				{/* <Text weight={500} size="md">
               More information
             </Text> */}
-						<Accordion
-							chevronPosition='left'
-							defaultValue='customization'
-							variant='contained'
-							py={'sm'}
-						>
-							{/* Ingredients */}
-							<IngredientAccordion
-								allergens={allergens}
-								hasIngredients={hasIngredients}
-								dishId={dish.id}
-							/>
-						</Accordion>
-					</Card.Section>
-				</Card>
-			</Grid.Col>
-		</>
+				<Accordion
+					chevronPosition='left'
+					defaultValue='customization'
+					variant='contained'
+					py={'sm'}
+				>
+					{/* Ingredients */}
+					<IngredientAccordion
+						allergens={allergens}
+						hasIngredients={hasIngredients}
+						dishId={dish.id}
+					/>
+				</Accordion>
+			</Card.Section>
+		</Card>
 	);
 };
 

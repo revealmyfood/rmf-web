@@ -9,7 +9,10 @@ import {
 	Image,
 	Accordion,
 	Chip,
-	createStyles
+	createStyles,
+	Card,
+	Badge,
+	Group
 } from '@mantine/core';
 import { get, ref as dbRef, getDatabase } from 'firebase/database';
 import DishCard from '../../components/DishCard';
@@ -20,6 +23,8 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import React, { forwardRef, memo, useEffect, useMemo, useState } from 'react';
 import nookies from 'nookies';
 import { firebaseAdmin } from '../../firebase/firebaseAdmin';
+import { NextSeo } from 'next-seo';
+import TableOfContents from '../../components/TableOfContent';
 // import Image from 'next/image';
 // import { getDownloadURL, getStorage, ref as storageRef } from '@firebase/storage';
 type Props = {
@@ -28,7 +33,7 @@ type Props = {
 		title: string;
 		description: string;
 		name: string;
-		dishesData: DishInfo[];
+		dishesData: [string, DishInfo[]][];
 		allergens: { [key: string]: string }[];
 		lifestyles: string[];
 		healthTags: string[];
@@ -55,7 +60,7 @@ const Restaurant = ({ data }: Props) => {
 		authenticated,
 		healthTags
 	} = data;
-	const [dishes, setDishes] = useState<DishInfo[]>(dishesData);
+	const [dishes, setDishes] = useState<[string, DishInfo[]][]>(dishesData);
 	const [allergensFilter, setAllergensFilter] = useState<string[]>([]);
 	const [healthTagsFilter, setHealthTagsFilter] = useState<string[]>([]);
 	const [lifestylesFilter, setLifestyleFilter] = useState<string[]>([]);
@@ -64,20 +69,45 @@ const Restaurant = ({ data }: Props) => {
 	useEffect(() => {
 		let filteredDishes = dishesData;
 		if (allergensFilter.length > 0) {
-			filteredDishes = dishesData.filter(
-				dish => !dish.allergens.some(allergen => allergensFilter.includes(allergen.name))
-			);
+			filteredDishes = dishesData
+				.map(
+					([type, dish]) =>
+						[
+							type as string,
+							dish.filter(
+								d =>
+									!d.allergens.some(allergen => allergensFilter.includes(allergen.name))
+							)
+						] as [string, DishInfo[]]
+				)
+				.filter(([_, dish]) => dish.length > 0);
 		}
 
 		if (healthTagsFilter.length > 0) {
-			filteredDishes = dishesData.filter(dish =>
-				dish.healthTags.some(healthTag => healthTagsFilter.includes(healthTag))
-			);
+			filteredDishes = dishesData
+				.map(
+					([type, dish]) =>
+						[
+							type,
+							dish.filter(d =>
+								d.healthTags.some(healthTag => healthTagsFilter.includes(healthTag))
+							)
+						] as [string, DishInfo[]]
+				)
+				.filter(([_, dish]) => dish.length > 0);
 		}
 		if (lifestylesFilter.length > 0) {
-			filteredDishes = dishesData.filter(dish =>
-				dish.lifestyle.some(lifestyle => lifestylesFilter.includes(lifestyle))
-			);
+			filteredDishes = dishesData
+				.map(
+					([type, dish]) =>
+						[
+							type,
+							dish.filter(d =>
+								d.lifestyle.some(lifestyle => lifestylesFilter.includes(lifestyle))
+							)
+						] as [string, DishInfo[]]
+				)
+				.filter(([_, dish]) => dish.length > 0);
 		}
 
 		setDishes(filteredDishes);
@@ -93,7 +123,17 @@ const Restaurant = ({ data }: Props) => {
 
 	return (
 		<>
-			<SEO title={title} description={description} />
+			<NextSeo
+				title={title}
+				description={description}
+				additionalMetaTags={[
+					{
+						name: '',
+						content: ''
+					}
+				]}
+			/>
+			{/*<SEO title={title} description={description} />*/}
 			<Grid grow>
 				<Grid.Col span={12}>
 					<Text
@@ -182,16 +222,53 @@ const Restaurant = ({ data }: Props) => {
 						/>
 					</Grid.Col>
 				)}
-				{dishes.map(dish => (
-					<DishCard
-						key={dish.id}
-						dish={dish}
-						allergens={dish.allergens}
-						hasIngredients={dish.hasIngredients}
-						healthTags={dish.healthTags}
-						lifestyle={dish.lifestyle}
-					/>
-				))}
+				<Grid.Col sm={12} md={12}>
+					<Grid>
+						<Grid.Col sm={3} md={3}>
+							<TableOfContents items={dishes} />
+						</Grid.Col>
+						<Grid.Col sm={9} md={9}>
+							{dishes.map(([type, dish]) => (
+								<Card
+									key={type}
+									id={type
+										.replace(/\s/g, '-')
+										.replace(/&/g, '-')
+										.replace(/>/g, '-')
+										.replace(/</g, '-')
+										.replace(/"/g, '-')}
+									data-toc={1}
+									data-toc-title={type.replace(/\b(\w)/g, s => s.toUpperCase())}
+									withBorder
+									m='md'
+								>
+									<Card.Section>
+										<Group mt={'xs'} ml={'xs'}>
+											<Badge radius={'sm'} size={'xl'} variant={'outline'}>
+												{type.replace(/\b(\w)/g, s => s.toUpperCase())}
+											</Badge>
+										</Group>
+									</Card.Section>
+									<Card.Section inheritPadding p='md'>
+										{dish.map(dish => (
+											<DishCard
+												key={dish.id}
+												dish={dish}
+												allergens={dish.allergens}
+												hasIngredients={dish.hasIngredients}
+												healthTags={dish.healthTags}
+												lifestyle={dish.lifestyle}
+											/>
+										))}
+									</Card.Section>
+								</Card>
+							))}
+						</Grid.Col>
+					</Grid>
+				</Grid.Col>
+				<Grid.Col sm={12} md={12}>
+					<Text>RevealMyFood.com</Text>
+				</Grid.Col>
 			</Grid>
 		</>
 	);
@@ -278,52 +355,67 @@ export async function getServerSideProps(ctx: {
 			authenticated = false;
 		}
 
+		// @ts-ignore
 		serverData = {
 			authenticated,
 			title: `Menu ${data.name}`,
 			description: data.metaDescription || '',
 			allergens,
 			name: data.name,
-			dishesData: dishesData.map(([key, dish]) => {
-				const dishData = {
-					id: key,
-					dishName: dish.dishName,
-					description: dish.description,
-					price: dish.price,
-					...Object.keys(dish)
-						.filter(key => key.match(/lifestyle|ingredient|health/) || key in allergens)
-						.reduce(
-							(prev, curr) => {
-								return {
-									...prev,
-									lifestyle: curr.match(/lifestyle/)
-										? [...prev.lifestyle, dish[curr]]
-										: prev.lifestyle,
-									healthTags: curr.match(/health/)
-										? [...prev.healthTags, dish[curr]]
-										: prev.healthTags,
-									hasIngredients:
-										prev.hasIngredients || Boolean(curr.match(/ingredient/)),
-									allergens:
-										curr in allergens
-											? [...prev.allergens, { name: curr, image: allergens[curr] }]
-											: prev.allergens
-								};
-							},
-							{
-								lifestyle: [],
-								healthTags: [],
-								hasIngredients: false,
-								allergens: []
-							} as Record<string, any>
-						)
-				};
-				// @ts-ignore
-				dishData.lifestyle.forEach(lifestyles.add, lifestyles);
-				// @ts-ignore
-				dishData.healthTags.forEach(healthTags.add, healthTags);
-				return dishData;
-			})
+			dishesData: [
+				...dishesData
+					.map(([key, dish]) => {
+						const dishData = {
+							id: key,
+							dishName: dish.dishName,
+							description: dish.description,
+							price: dish.price,
+							category: dish.category_1?.toLowerCase() || 'no category',
+							...Object.keys(dish)
+								.filter(
+									key => key.match(/lifestyle|ingredient|health/) || key in allergens
+								)
+								.reduce(
+									(prev, curr) => {
+										return {
+											...prev,
+											lifestyle: curr.match(/lifestyle/)
+												? [...prev.lifestyle, dish[curr]]
+												: prev.lifestyle,
+											healthTags: curr.match(/health/)
+												? [...prev.healthTags, dish[curr]]
+												: prev.healthTags,
+											hasIngredients:
+												prev.hasIngredients || Boolean(curr.match(/ingredient/)),
+											allergens:
+												curr in allergens
+													? [...prev.allergens, { name: curr, image: allergens[curr] }]
+													: prev.allergens
+										};
+									},
+									{
+										lifestyle: [],
+										healthTags: [],
+										hasIngredients: false,
+										allergens: []
+									} as Record<string, any>
+								)
+						};
+						// @ts-ignore
+						dishData.lifestyle.forEach(lifestyles.add, lifestyles);
+						// @ts-ignore
+						dishData.healthTags.forEach(healthTags.add, healthTags);
+						return dishData;
+					})
+					.reduce(
+						(result, dish) =>
+							result.has(dish.category)
+								? result.set(dish.category, [...result.get(dish.category), dish])
+								: result.set(dish.category, [dish]),
+						new Map()
+					)
+					.entries()
+			]
 		};
 	}
 	return {

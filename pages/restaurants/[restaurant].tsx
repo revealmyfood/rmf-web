@@ -137,18 +137,6 @@ const Restaurant = ({ data }: Props) => {
 			<DishCarousel dishes={dishesData} restaurant={name} />
 			{/*<SEO title={title} description={description} />*/}
 			<Grid grow>
-				<Grid.Col span={12}>
-					<Text
-						px='sm'
-						py='lg'
-						variant='gradient'
-						size={40}
-						weight={700}
-						gradient={{ from: 'teal', to: 'lime', deg: 105 }}
-					>
-						{name}
-					</Text>
-				</Grid.Col>
 				<Grid.Col sm={6} md={4}>
 					<Accordion
 						chevronPosition='left'
@@ -356,6 +344,7 @@ export async function getServerSideProps(ctx: {
 		} catch (error) {
 			authenticated = false;
 		}
+		const collator = new Intl.Collator([], { numeric: true });
 
 		serverData = {
 			authenticated,
@@ -365,6 +354,7 @@ export async function getServerSideProps(ctx: {
 			name: data.name,
 			dishesData: [
 				...dishesData
+					.sort(([k1], [k2]) => collator.compare(k1, k2))
 					.map(([key, dish]) => {
 						const dishData = {
 							id: key,

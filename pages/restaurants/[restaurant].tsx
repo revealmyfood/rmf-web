@@ -25,6 +25,7 @@ import nookies from 'nookies';
 import { firebaseAdmin } from '../../firebase/firebaseAdmin';
 import { NextSeo } from 'next-seo';
 import TableOfContents from '../../components/TableOfContent';
+import DishCarousel from '../../components/DishCarousel';
 // import Image from 'next/image';
 // import { getDownloadURL, getStorage, ref as storageRef } from '@firebase/storage';
 type Props = {
@@ -133,6 +134,7 @@ const Restaurant = ({ data }: Props) => {
 					}
 				]}
 			/>
+			<DishCarousel dishes={dishesData} restaurant={name} />
 			{/*<SEO title={title} description={description} />*/}
 			<Grid grow>
 				<Grid.Col span={12}>
@@ -355,7 +357,6 @@ export async function getServerSideProps(ctx: {
 			authenticated = false;
 		}
 
-		// @ts-ignore
 		serverData = {
 			authenticated,
 			title: `Menu ${data.name}`,
@@ -369,9 +370,9 @@ export async function getServerSideProps(ctx: {
 							id: key,
 							dishName: dish.dishName,
 							description: dish.description,
-							price: dish.price,
+							price: dish.price ? Number(dish.price) : 0,
 							category: dish.category_1?.toLowerCase() || 'no category',
-							...Object.keys(dish)
+							...(Object.keys(dish)
 								.filter(
 									key => key.match(/lifestyle|ingredient|health/) || key in allergens
 								)
@@ -380,13 +381,14 @@ export async function getServerSideProps(ctx: {
 										return {
 											...prev,
 											lifestyle: curr.match(/lifestyle/)
-												? [...prev.lifestyle, dish[curr]]
+												? [...prev.lifestyle, dish[curr] as string]
 												: prev.lifestyle,
 											healthTags: curr.match(/health/)
-												? [...prev.healthTags, dish[curr]]
+												? [...prev.healthTags, dish[curr] as string]
 												: prev.healthTags,
-											hasIngredients:
-												prev.hasIngredients || Boolean(curr.match(/ingredient/)),
+											ingredients: curr.match(/ingredient/)
+												? [...prev.ingredients, dish[curr] as string]
+												: prev.ingredients,
 											allergens:
 												curr in allergens
 													? [...prev.allergens, { name: curr, image: allergens[curr] }]
@@ -396,11 +398,18 @@ export async function getServerSideProps(ctx: {
 									{
 										lifestyle: [],
 										healthTags: [],
-										hasIngredients: false,
+										ingredients: [],
 										allergens: []
-									} as Record<string, any>
-								)
-						};
+									} as Pick<
+										DishInfo,
+										'lifestyle' | 'healthTags' | 'ingredients' | 'allergens'
+									>
+								) as Pick<
+								DishInfo,
+								'lifestyle' | 'healthTags' | 'ingredients' | 'allergens'
+							>)
+						} as DishInfo & { category: string };
+						dishData.hasIngredients = dishData.ingredients.length > 0;
 						// @ts-ignore
 						dishData.lifestyle.forEach(lifestyles.add, lifestyles);
 						// @ts-ignore

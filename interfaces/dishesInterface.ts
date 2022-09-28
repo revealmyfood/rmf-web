@@ -6,6 +6,7 @@ export interface DishInfo {
 	lifestyle: string[];
 	healthTags: string[];
 	hasIngredients: boolean;
+	ingredients: string[];
 	allergens: { name: string; image: string }[];
 }
 export interface RestaurantData {

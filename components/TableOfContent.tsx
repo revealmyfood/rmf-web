@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { createStyles, Box, Text, Group, Tooltip } from '@mantine/core';
 import { IconMenu2 } from '@tabler/icons';
 import { useHeadsObserver } from '../hook/useHeadsObserver';
+import {scrollIntoView} from "seamless-scroll-polyfill";
 
 const LINK_HEIGHT = 38;
 const INDICATOR_SIZE = 10;
@@ -97,9 +98,7 @@ const TableOfContents = ({ items: itemsToWatch }: { items: any }) => {
 					href={item.label}
 					onClick={event => {
 						event.preventDefault();
-						document.querySelector(`#${item.id}`)?.scrollIntoView({
-							behavior: 'smooth'
-						});
+						scrollIntoView(document.querySelector(`#${item.id}`) as HTMLElement, { behavior: "smooth", block: "center", inline: "center" })
 					}}
 					className={cx(classes.link, {
 						[classes.linkActive]: headings.get(activeId)?.index === index

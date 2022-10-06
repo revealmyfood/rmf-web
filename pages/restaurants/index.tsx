@@ -24,7 +24,7 @@ export default function List({ restaurants }: Props) {
 			<Group position={'right'} mb={'lg'}>
 				<Button onClick={signOut}>Sign out</Button>
 			</Group>
-			<Grid grow>
+			<Grid grow p='md'>
 				{restaurants.map((restaurant: Restaurant, index: number) => (
 					<Grid.Col md={6} xs={12} key={index}>
 						<Link

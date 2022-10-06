@@ -19,7 +19,8 @@ import {
 	ScrollArea,
 	AppShell,
 	Header,
-	Indicator
+	Indicator,
+	Title
 } from '@mantine/core';
 import { get, ref as dbRef, getDatabase } from 'firebase/database';
 import DishCard from '../../components/DishCard';
@@ -299,14 +300,10 @@ const Restaurant = ({ data }: Props) => {
 									// 	</Card.Section>
 									// </Card>
 									<div key={type}>
-										<Text
-											component='span'
-											color='gray'
-											align='center'
-											size='xl'
-											weight={700}
+										<Title
+											order={3}
+											pt='md'
 											px='md'
-											pt='lg'
 											id={type
 												.replace(/\s/g, '-')
 												.replace(/&/g, '-')
@@ -317,7 +314,7 @@ const Restaurant = ({ data }: Props) => {
 											data-toc-title={type.replace(/\b(\w)/g, s => s.toUpperCase())}
 										>
 											{type.replace(/\b(\w)/g, s => s.toUpperCase())}
-										</Text>
+										</Title>
 										{dish.map(dish => (
 											<DishCard
 												key={dish.id}
@@ -328,6 +325,7 @@ const Restaurant = ({ data }: Props) => {
 												lifestyle={dish.lifestyle}
 											/>
 										))}
+										<br />
 									</div>
 								))}
 							</Grid.Col>

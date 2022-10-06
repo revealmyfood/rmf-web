@@ -21,7 +21,7 @@ export default function List({ restaurants }: Props) {
 	const { signOut } = useFirebaseAuth();
 	return (
 		<>
-			<Group position={'right'} mb={'lg'}>
+			<Group position={'right'} m={'lg'}>
 				<Button onClick={signOut}>Sign out</Button>
 			</Group>
 			<Grid grow p='md'>

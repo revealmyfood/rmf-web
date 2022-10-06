@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { createStyles, Box, Text, Group, Tooltip } from '@mantine/core';
+import { createStyles, Box, Text, Group, Tooltip, Tabs, ScrollArea } from '@mantine/core';
 import { IconMenu2 } from '@tabler/icons';
 import { useHeadsObserver } from '../hook/useHeadsObserver';
 import { scrollIntoView } from 'seamless-scroll-polyfill';

@@ -12,7 +12,14 @@ import {
 	createStyles,
 	Card,
 	Badge,
-	Group
+	Group,
+	Button,
+	Modal,
+	Tabs,
+	ScrollArea,
+	AppShell,
+	Header,
+	Indicator
 } from '@mantine/core';
 import { get, ref as dbRef, getDatabase } from 'firebase/database';
 import DishCard from '../../components/DishCard';
@@ -26,6 +33,9 @@ import { firebaseAdmin } from '../../firebase/firebaseAdmin';
 import { NextSeo } from 'next-seo';
 import TableOfContents from '../../components/TableOfContent';
 import DishCarousel from '../../components/DishCarousel';
+import { IconBallTennis, IconFilter, IconLayoutList } from '@tabler/icons';
+import { useMediaQuery } from '@mantine/hooks';
+import MenuCategoriesTabs from '../../components/MenuCategoriesTabs';
 // import Image from 'next/image';
 // import { getDownloadURL, getStorage, ref as storageRef } from '@firebase/storage';
 type Props = {
@@ -65,6 +75,8 @@ const Restaurant = ({ data }: Props) => {
 	const [allergensFilter, setAllergensFilter] = useState<string[]>([]);
 	const [healthTagsFilter, setHealthTagsFilter] = useState<string[]>([]);
 	const [lifestylesFilter, setLifestyleFilter] = useState<string[]>([]);
+	const [showFiltersModal, setShowFiltersModal] = useState(false);
+	const isViewportDesktop = useMediaQuery('(min-width: 900px)');
 	const { classes } = useStyles();
 
 	useEffect(() => {
@@ -124,122 +136,179 @@ const Restaurant = ({ data }: Props) => {
 
 	return (
 		<>
-			<NextSeo
-				title={title}
-				description={description}
-				additionalMetaTags={[
-					{
-						name: '',
-						content: ''
-					}
-				]}
-			/>
-			<DishCarousel dishes={dishesData} restaurant={name} />
-			{/*<SEO title={title} description={description} />*/}
-			<Grid grow>
-				<Grid.Col sm={6} md={4}>
-					<Accordion
-						chevronPosition='left'
-						defaultValue='customization'
-						variant='default'
-					>
-						<Accordion.Item value='nutrients'>
-							<Accordion.Control>Allergens</Accordion.Control>
-							<Accordion.Panel>
-								<Chip.Group
-									value={allergensFilter}
-									onChange={setAllergensFilter}
-									position='left'
-									multiple
-								>
-									{Object.entries(allergens)
-										.sort()
-										.map(([all, image]) => (
-											<Chip classNames={classes} variant={'filled'} value={all} key={all}>
-												<Box sx={{ display: 'flex', alignItems: 'center' }}>
-													<Box mr={10} sx={{ display: 'flex', alignItems: 'center' }}>
-														<Image alt={all} src={'/' + image} width={20} height={20} />
-													</Box>
-													<Text>{all}</Text>
-												</Box>
-											</Chip>
-										))}
-								</Chip.Group>
-							</Accordion.Panel>
-						</Accordion.Item>
-					</Accordion>
-				</Grid.Col>
-				{healthTags.length > 0 && (
-					<Grid.Col sm={6} md={4}>
-						<Accordion
-							chevronPosition='left'
-							defaultValue='customization'
-							variant='default'
+			<AppShell
+				padding='md'
+				header={
+					<Header height={!isViewportDesktop ? 102 : 70} p='md'>
+						{/* <Indicator inline label={3} size={16} color='green'> */}
+						<Button
+							variant='light'
+							leftIcon={<IconFilter />}
+							onClick={() => setShowFiltersModal(true)}
 						>
-							<Accordion.Item value='nutrients'>
-								<Accordion.Control>Health Claims</Accordion.Control>
-								<Accordion.Panel>
-									<Chip.Group
-										value={healthTagsFilter}
-										onChange={value => setHealthTagsFilter(value.slice(-2))}
-										position='left'
-										multiple
-									>
-										{healthTags.sort().map(h => (
-											<Chip classNames={classes} variant={'filled'} value={h} key={h}>
-												<Text>{h}</Text>
-											</Chip>
-										))}
-									</Chip.Group>
-								</Accordion.Panel>
-							</Accordion.Item>
-						</Accordion>
-					</Grid.Col>
-				)}
-				{lifestyles.length > 0 && (
-					<Grid.Col sm={6} md={4}>
-						<MultiSelect
-							mb={'md'}
-							data={lifestyles.sort().map(all => ({
-								label: all.toLowerCase().replace(/\b(\w)/g, s => s.toUpperCase()),
-								value: all
-							}))}
-							onChange={setLifestyleFilter}
-							disabled={lifestyles.length === 0}
-							label='Lifestyle'
-							placeholder='Select lifestyles from the list'
-							clearable
-						/>
-					</Grid.Col>
-				)}
-				<Grid.Col sm={12} md={12}>
-					<Grid>
-						<Grid.Col sm={3} md={3}>
-							<TableOfContents items={dishes} />
+							Filters
+						</Button>
+						{/* </Indicator> */}
+						{!isViewportDesktop && (
+							<ScrollArea style={{ width: 'calc(100vw - 32px)', height: 48 }}>
+								<MenuCategoriesTabs items={dishes} />
+							</ScrollArea>
+						)}
+					</Header>
+				}
+				styles={theme => ({
+					main: {
+						backgroundColor:
+							theme.colorScheme === 'dark' ? theme.colors.dark[8] : theme.colors.gray[0]
+					}
+				})}
+			>
+				<DishCarousel dishes={dishesData} restaurant={name} />
+				{/*<SEO title={title} description={description} />*/}
+				<Grid grow>
+					<Modal
+						opened={showFiltersModal}
+						onClose={() => setShowFiltersModal(false)}
+						fullScreen
+						padding='lg'
+					>
+						<Grid.Col>
+							<Accordion
+								chevronPosition='left'
+								defaultValue='customization'
+								variant='default'
+							>
+								<Accordion.Item value='nutrients'>
+									<Accordion.Control>Allergens</Accordion.Control>
+									<Accordion.Panel>
+										<Chip.Group
+											value={allergensFilter}
+											onChange={setAllergensFilter}
+											position='left'
+											multiple
+										>
+											{Object.entries(allergens)
+												.sort()
+												.map(([all, image]) => (
+													<Chip
+														classNames={classes}
+														variant={'filled'}
+														value={all}
+														key={all}
+													>
+														<Box sx={{ display: 'flex', alignItems: 'center' }}>
+															<Box mr={10} sx={{ display: 'flex', alignItems: 'center' }}>
+																<Image
+																	alt={all}
+																	src={'/' + image}
+																	width={20}
+																	height={20}
+																/>
+															</Box>
+															<Text>{all}</Text>
+														</Box>
+													</Chip>
+												))}
+										</Chip.Group>
+									</Accordion.Panel>
+								</Accordion.Item>
+							</Accordion>
 						</Grid.Col>
-						<Grid.Col sm={9} md={9}>
-							{dishes.map(([type, dish]) => (
-								<Card
-									key={type}
-									id={type
-										.replace(/\s/g, '-')
-										.replace(/&/g, '-')
-										.replace(/>/g, '-')
-										.replace(/</g, '-')
-										.replace(/"/g, '-')}
-									data-toc={1}
-									data-toc-title={type.replace(/\b(\w)/g, s => s.toUpperCase())}
-									withBorder
-									m='md'
+						{healthTags.length > 0 && (
+							<Grid.Col sm={6} md={4}>
+								<Accordion
+									chevronPosition='left'
+									defaultValue='customization'
+									variant='default'
 								>
-									<Card.Section>
-										<Group mt={'xs'} ml={'xs'}>
-											<Badge radius={'sm'} size={'xl'} variant={'outline'}>
-												{type.replace(/\b(\w)/g, s => s.toUpperCase())}
-											</Badge>
-										</Group>
-									</Card.Section>
-									<Card.Section inheritPadding p='md'>
+									<Accordion.Item value='nutrients'>
+										<Accordion.Control>Health Claims</Accordion.Control>
+										<Accordion.Panel>
+											<Chip.Group
+												value={healthTagsFilter}
+												onChange={value => setHealthTagsFilter(value.slice(-2))}
+												position='left'
+												multiple
+											>
+												{healthTags.sort().map(h => (
+													<Chip classNames={classes} variant={'filled'} value={h} key={h}>
+														<Text>{h}</Text>
+													</Chip>
+												))}
+											</Chip.Group>
+										</Accordion.Panel>
+									</Accordion.Item>
+								</Accordion>
+							</Grid.Col>
+						)}
+						{lifestyles.length > 0 && (
+							<Grid.Col sm={6} md={4}>
+								<MultiSelect
+									mb={'md'}
+									data={lifestyles.sort().map(all => ({
+										label: all.toLowerCase().replace(/\b(\w)/g, s => s.toUpperCase()),
+										value: all
+									}))}
+									onChange={setLifestyleFilter}
+									disabled={lifestyles.length === 0}
+									label='Lifestyle'
+									placeholder='Select lifestyles from the list'
+									clearable
+								/>
+							</Grid.Col>
+						)}
+					</Modal>
+				</Grid>
+				<Grid grow>
+					<Grid.Col sm={12} md={12}>
+						<Grid>
+							<Grid.Col sm={3} md={3}>
+								{isViewportDesktop && <TableOfContents items={dishes} />}
+							</Grid.Col>
+							<Grid.Col sm={9} md={9}>
+								{dishes.map(([type, dish]) => (
+									// <Card
+									// 	key={type}
+									// 	id={type
+									// 		.replace(/\s/g, '-')
+									// 		.replace(/&/g, '-')
+									// 		.replace(/>/g, '-')
+									// 		.replace(/</g, '-')
+									// 		.replace(/"/g, '-')}
+									// 	data-toc={1}
+									// 	data-toc-title={type.replace(/\b(\w)/g, s => s.toUpperCase())}
+									// >
+									// 	<Card.Section>
+									// 		<Group mt={'xs'} ml={'xs'}>
+									// 			{/* <Badge radius={'sm'} size={'xl'} variant={'outline'}> */}
+									// 			{type.replace(/\b(\w)/g, s => s.toUpperCase())}
+									// 			{/* </Badge> */}
+									// 		</Group>
+									// 	</Card.Section>
+									// 	<Card.Section inheritPadding p='0'>
+									// 		{dish.map(dish => (
+									// 			<DishCard
+									// 				key={dish.id}
+									// 				dish={dish}
+									// 				allergens={dish.allergens}
+									// 				hasIngredients={dish.hasIngredients}
+									// 				healthTags={dish.healthTags}
+									// 				lifestyle={dish.lifestyle}
+									// 			/>
+									// 		))}
+									// 	</Card.Section>
+									// </Card>
+									<div key={type}>
+										<Text
+											component='span'
+											color='gray'
+											align='center'
+											size='xl'
+											weight={700}
+											px='md'
+										>
+											{type.replace(/\b(\w)/g, s => s.toUpperCase())}
+										</Text>
 										{dish.map(dish => (
 											<DishCard
 												key={dish.id}
@@ -250,16 +319,26 @@ const Restaurant = ({ data }: Props) => {
 												lifestyle={dish.lifestyle}
 											/>
 										))}
-									</Card.Section>
-								</Card>
-							))}
-						</Grid.Col>
-					</Grid>
-				</Grid.Col>
-				<Grid.Col sm={12} md={12}>
-					<Text>RevealMyFood.com</Text>
-				</Grid.Col>
-			</Grid>
+									</div>
+								))}
+							</Grid.Col>
+						</Grid>
+					</Grid.Col>
+					<Grid.Col sm={12} md={12}>
+						<Text>RevealMyFood.com</Text>
+					</Grid.Col>
+				</Grid>
+			</AppShell>
+			<NextSeo
+				title={title}
+				description={description}
+				additionalMetaTags={[
+					{
+						name: '',
+						content: ''
+					}
+				]}
+			/>
 		</>
 	);
 };
@@ -268,7 +347,7 @@ const ContentSecurityPolicy = (src: string) => `
   default-src 'self' 'unsafe-inline' ${src} *.googleapis.com *.google-analytics.com *.vercel-insights.com;
   img-src 'self' data:;
   script-src 'self' 'unsafe-inline' 'unsafe-eval' *.google-analytics.com *.googletagmanager.com ${src};
-  font-src 'self' ${src};;  
+  font-src 'self' ${src};;
 `;
 
 export async function getServerSideProps(ctx: {
@@ -325,7 +404,7 @@ export async function getServerSideProps(ctx: {
 		res.setHeader('Access-Control-Allow-Origin', data.origin || '');
 		res.setHeader(
 			'Content-Security-Policy',
-			`${ContentSecurityPolicy(data.origin || '')} 
+			`${ContentSecurityPolicy(data.origin || '')}
 			frame-ancestors 'self' ${data.origin || ''}`
 				.replace(/\s{2,}/g, ' ')
 				.trim()

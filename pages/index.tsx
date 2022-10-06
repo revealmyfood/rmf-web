@@ -73,33 +73,33 @@ const Home: NextPage = () => {
 				</Text>
 			</Title>
 
-			<Paper withBorder shadow='md' p={30} mt={30} radius='md'>
-				{error && <Text color='red'>{error}</Text>}
-				<TextInput
-					label='Email'
-					placeholder='you@mantine.dev'
-					required
-					value={email}
-					onChange={event => setEmail(event.currentTarget.value)}
-				/>
-				<PasswordInput
-					label='Password'
-					placeholder='Your password'
-					required
-					mt='md'
-					value={password}
-					onChange={event => setPassword(event.currentTarget.value)}
-				/>
-				<Group position='apart' mt='md'>
-					<Checkbox label='Remember me' />
-					<Anchor<'a'> onClick={event => event.preventDefault()} href='#' size='sm'>
-						Forgot password?
-					</Anchor>
-				</Group>
-				<Button onClick={onSubmit} fullWidth mt='xl' component='a'>
-					Sign in
-				</Button>
-			</Paper>
+			{/* <Paper withBorder shadow='md' p={30} mt={30} radius='md'> */}
+			{error && <Text color='red'>{error}</Text>}
+			<TextInput
+				label='Email'
+				placeholder='you@mantine.dev'
+				required
+				value={email}
+				onChange={event => setEmail(event.currentTarget.value)}
+			/>
+			<PasswordInput
+				label='Password'
+				placeholder='Your password'
+				required
+				mt='md'
+				value={password}
+				onChange={event => setPassword(event.currentTarget.value)}
+			/>
+			<Group position='apart' mt='md'>
+				<Checkbox label='Remember me' />
+				<Anchor<'a'> onClick={event => event.preventDefault()} href='#' size='sm'>
+					Forgot password?
+				</Anchor>
+			</Group>
+			<Button onClick={onSubmit} fullWidth mt='xl' component='a'>
+				Sign in
+			</Button>
+			{/* </Paper> */}
 		</Container>
 	);
 };

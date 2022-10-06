@@ -154,10 +154,10 @@ const DishCard = ({ dish, allergens, healthTags, hasIngredients, lifestyle }: Pr
 			id={dish.id}
 			data-toc={2}
 			data-toc-title={dish.dishName}
-			withBorder
+			// withBorder
 			shadow='sm'
 			radius='md'
-			p='md'
+			// p='md'
 			m='xs'
 		>
 			<Card.Section inheritPadding p='md'>

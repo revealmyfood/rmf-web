@@ -306,6 +306,15 @@ const Restaurant = ({ data }: Props) => {
 											size='xl'
 											weight={700}
 											px='md'
+											pt='lg'
+											id={type
+												.replace(/\s/g, '-')
+												.replace(/&/g, '-')
+												.replace(/>/g, '-')
+												.replace(/</g, '-')
+												.replace(/"/g, '-')}
+											data-toc={1}
+											data-toc-title={type.replace(/\b(\w)/g, s => s.toUpperCase())}
 										>
 											{type.replace(/\b(\w)/g, s => s.toUpperCase())}
 										</Text>

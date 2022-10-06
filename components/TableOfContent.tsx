@@ -91,7 +91,7 @@ const TableOfContents = ({ items: itemsToWatch }: { items: any }) => {
 	}, [itemsToWatch]);
 
 	const items = [...headings.values()].map((item, index) => (
-		<Tooltip key={item.label} label={item.label} withinPortal openDelay={1000}>
+		<Tooltip key={index} label={item.label} withinPortal openDelay={1000}>
 			<Text key={item.label} lineClamp={1}>
 				<Box<'a'>
 					component='a'

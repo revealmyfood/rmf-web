@@ -7,14 +7,16 @@ document.onreadystatechange = () => {
 			const name = container.dataset.name;
 			if (key && name) {
 				const baseUrl = scriptSrc.replace('/restaurant_menu.js', '');
-				// container.innerHTML = `<object
-				//      width='100%'
-				//      height='100%'
-				//      data="${baseUrl}/restaurants/${name}?u=${key}"></object>`;
+				// const baseUrl = 'https://reveal-my-food.vercel.app';
 				fetch(`${baseUrl}/restaurants/${name}?u=${key}`)
 					.then(res => res.text())
 					.then(html => {
-						container.innerHTML = html;
+						const doc = new DOMParser().parseFromString(html, 'text/html');
+						doc.head.innerHTML = doc.head.innerHTML.replaceAll(
+							/"\//g,
+							'"' + baseUrl + '/'
+						);
+						document.head.append(...doc.head.children);
 					});
 			}
 		}

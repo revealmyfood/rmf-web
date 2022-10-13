@@ -20,7 +20,10 @@ import {
 	AppShell,
 	Header,
 	Indicator,
-	Title
+	Title,
+	Stack,
+	ActionIcon,
+	useMantineColorScheme
 } from '@mantine/core';
 import { get, ref as dbRef, getDatabase } from 'firebase/database';
 import DishCard from '../../components/DishCard';
@@ -34,7 +37,13 @@ import { firebaseAdmin } from '../../firebase/firebaseAdmin';
 import { NextSeo } from 'next-seo';
 import TableOfContents from '../../components/TableOfContent';
 import DishCarousel from '../../components/DishCarousel';
-import { IconBallTennis, IconFilter, IconLayoutList } from '@tabler/icons';
+import {
+	IconBallTennis,
+	IconFilter,
+	IconLayoutList,
+	IconMoonStars,
+	IconSun
+} from '@tabler/icons';
 import { useMediaQuery } from '@mantine/hooks';
 import MenuCategoriesTabs from '../../components/MenuCategoriesTabs';
 // import Image from 'next/image';
@@ -76,9 +85,32 @@ const Restaurant = ({ data }: Props) => {
 	const [allergensFilter, setAllergensFilter] = useState<string[]>([]);
 	const [healthTagsFilter, setHealthTagsFilter] = useState<string[]>([]);
 	const [lifestylesFilter, setLifestyleFilter] = useState<string[]>([]);
-	const [showFiltersModal, setShowFiltersModal] = useState(false);
+	const [showFiltersModal, setShowFiltersModal] = useState(true);
+	const [tempFilters, setTempFilters] = useState({
+		healthTagsFilter: [],
+		allergensFilter: [],
+		lifestylesFilter: []
+	});
 	const isViewportDesktop = useMediaQuery('(min-width: 900px)');
+	const { colorScheme, toggleColorScheme } = useMantineColorScheme();
 	const { classes } = useStyles();
+
+	const darkTheme = colorScheme === 'dark';
+
+	const handleConfirmModal = () => {
+		setHealthTagsFilter(tempFilters.healthTagsFilter);
+		setLifestyleFilter(tempFilters.lifestylesFilter);
+		setAllergensFilter(tempFilters.allergensFilter);
+
+		setShowFiltersModal(false);
+	};
+
+	const handleAddTempFilters = (key, value: any) => {
+		setTempFilters({
+			...tempFilters,
+			[key]: value
+		});
+	};
 
 	useEffect(() => {
 		let filteredDishes = dishesData;
@@ -142,13 +174,33 @@ const Restaurant = ({ data }: Props) => {
 				header={
 					<Header height={!isViewportDesktop ? 102 : 70} p='md'>
 						{/* <Indicator inline label={3} size={16} color='green'> */}
-						<Button
-							variant='light'
-							leftIcon={<IconFilter />}
-							onClick={() => setShowFiltersModal(true)}
-						>
-							Filters
-						</Button>
+						<Group position='apart'>
+							<Indicator
+								inline
+								label={
+									healthTagsFilter.length +
+									allergensFilter.length +
+									lifestylesFilter.length
+								}
+								size={16}
+							>
+								<Button
+									variant='light'
+									leftIcon={<IconFilter />}
+									onClick={() => setShowFiltersModal(true)}
+								>
+									Filters
+								</Button>
+							</Indicator>
+							<ActionIcon
+								variant='light'
+								size='lg'
+								color={darkTheme ? 'green' : 'gray'}
+								onClick={() => toggleColorScheme()}
+							>
+								{darkTheme ? <IconSun size={16} /> : <IconMoonStars size={16} />}
+							</ActionIcon>
+						</Group>
 						{/* </Indicator> */}
 						{!isViewportDesktop && (
 							<ScrollArea style={{ width: 'calc(100vw - 32px)', height: 48 }}>
@@ -170,21 +222,32 @@ const Restaurant = ({ data }: Props) => {
 					<Modal
 						opened={showFiltersModal}
 						onClose={() => setShowFiltersModal(false)}
-						fullScreen
-						padding='lg'
+						fullScreen={isViewportDesktop ? false : true}
+						closeOnClickOutside={false}
+						closeOnEscape={false}
+						title={'Select your filters'}
+						padding='md'
 					>
-						<Grid.Col>
+						{/* <Grid.Col p={0}> */}
+						<Stack
+							align='stretch'
+							justify='space-between'
+							style={
+								isViewportDesktop ? { height: '100%' } : { height: 'calc(100vh - 80px)' }
+							}
+						>
+							{/* Allergens */}
 							<Accordion
 								chevronPosition='left'
-								defaultValue='customization'
-								variant='default'
+								variant='contained'
+								defaultValue={'nutrients'}
 							>
 								<Accordion.Item value='nutrients'>
 									<Accordion.Control>Allergens</Accordion.Control>
 									<Accordion.Panel>
 										<Chip.Group
-											value={allergensFilter}
-											onChange={setAllergensFilter}
+											value={tempFilters.allergensFilter}
+											onChange={value => handleAddTempFilters('allergensFilter', value)}
 											position='left'
 											multiple
 										>
@@ -193,7 +256,7 @@ const Restaurant = ({ data }: Props) => {
 												.map(([all, image]) => (
 													<Chip
 														classNames={classes}
-														variant={'filled'}
+														variant={'outline'}
 														value={all}
 														key={all}
 													>
@@ -213,51 +276,83 @@ const Restaurant = ({ data }: Props) => {
 										</Chip.Group>
 									</Accordion.Panel>
 								</Accordion.Item>
-							</Accordion>
-						</Grid.Col>
-						{healthTags.length > 0 && (
-							<Grid.Col sm={6} md={4}>
-								<Accordion
-									chevronPosition='left'
-									defaultValue='customization'
-									variant='default'
-								>
-									<Accordion.Item value='nutrients'>
+
+								{/* Health Tags */}
+								{healthTags.length > 0 && (
+									<Accordion.Item value='health-tags'>
 										<Accordion.Control>Health Claims</Accordion.Control>
 										<Accordion.Panel>
 											<Chip.Group
-												value={healthTagsFilter}
-												onChange={value => setHealthTagsFilter(value.slice(-2))}
+												value={tempFilters.healthTagsFilter}
+												onChange={value =>
+													handleAddTempFilters('healthTagsFilter', value.slice(-2))
+												}
 												position='left'
 												multiple
 											>
 												{healthTags.sort().map(h => (
-													<Chip classNames={classes} variant={'filled'} value={h} key={h}>
+													<Chip
+														classNames={classes}
+														variant={'outline'}
+														value={h}
+														key={h}
+													>
 														<Text>{h}</Text>
 													</Chip>
 												))}
 											</Chip.Group>
 										</Accordion.Panel>
 									</Accordion.Item>
-								</Accordion>
-							</Grid.Col>
-						)}
-						{lifestyles.length > 0 && (
-							<Grid.Col sm={6} md={4}>
-								<MultiSelect
-									mb={'md'}
-									data={lifestyles.sort().map(all => ({
-										label: all.toLowerCase().replace(/\b(\w)/g, s => s.toUpperCase()),
-										value: all
-									}))}
-									onChange={setLifestyleFilter}
-									disabled={lifestyles.length === 0}
-									label='Lifestyle'
-									placeholder='Select lifestyles from the list'
-									clearable
-								/>
-							</Grid.Col>
-						)}
+								)}
+
+								{/* Lifestyles */}
+								{lifestyles.length > 0 && (
+									<Accordion.Item value='lifestyles'>
+										<Accordion.Control>Lifestyle</Accordion.Control>
+										<Accordion.Panel>
+											<Chip.Group
+												value={tempFilters.lifestylesFilter}
+												onChange={value =>
+													handleAddTempFilters('lifestylesFilter', value)
+												}
+												position='left'
+												multiple
+											>
+												{lifestyles.sort().map(lifestyle => (
+													<Chip
+														classNames={classes}
+														variant={'outline'}
+														value={lifestyle}
+														key={lifestyle}
+													>
+														<Text>{lifestyle}</Text>
+													</Chip>
+												))}
+											</Chip.Group>
+
+											{/* <MultiSelect
+										mb={'md'}
+										data={lifestyles.sort().map(all => ({
+											label: all.toLowerCase().replace(/\b(\w)/g, s => s.toUpperCase()),
+											value: all
+										}))}
+										onChange={setLifestyleFilter}
+										disabled={lifestyles.length === 0}
+										label='Lifestyle'
+										placeholder='Select lifestyles from the list'
+										clearable
+									/> */}
+										</Accordion.Panel>
+									</Accordion.Item>
+								)}
+							</Accordion>
+							<Group grow pt={'lg'}>
+								<Button title='confirm-action' onClick={handleConfirmModal}>
+									Confirm
+								</Button>
+							</Group>
+						</Stack>
+						{/* </Grid.Col> */}
 					</Modal>
 				</Grid>
 				<Grid grow>

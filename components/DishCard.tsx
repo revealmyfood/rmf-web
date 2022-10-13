@@ -81,7 +81,7 @@ const IngredientAccordion = ({
 										size='md'
 										center
 										icon={
-											<ThemeIcon variant='filled' color='green' size={24} radius='xl'>
+											<ThemeIcon variant='outline' color='green' size={24} radius='xl'>
 												<IconApple size={16} />
 											</ThemeIcon>
 										}
@@ -89,7 +89,11 @@ const IngredientAccordion = ({
 										{Object.entries(dishInfo)
 											.filter(([key]) => key.match(/ingredient_/))
 											.map(([key, ingredient]) => (
-												<List.Item key={key}>{ingredient as string}</List.Item>
+												<List.Item key={key}>
+													<Text weight={400} size='md'>
+														{ingredient as string}
+													</Text>
+												</List.Item>
 											))}
 									</List>
 								</Grid.Col>
@@ -112,25 +116,35 @@ const IngredientAccordion = ({
 							size='md'
 							center
 							icon={
-								<ThemeIcon variant='filled' color='green' size={24} radius='xl'>
+								<ThemeIcon variant='outline' color='green' size={24} radius='xl'>
 									<IconCell size={16} />
 								</ThemeIcon>
 							}
 						>
 							<List.Item>
-								<Text>Energy: {dishInfo.energy}</Text>
+								<Text weight={400} size='md'>
+									Energy: <b>{dishInfo.energy}</b>
+								</Text>
 							</List.Item>
 							<List.Item>
-								<Text>Fat: {dishInfo.fat}</Text>
+								<Text weight={400} size='md'>
+									Fat: <b>{dishInfo.fat}</b>
+								</Text>
 							</List.Item>
 							<List.Item>
-								<Text>Fibre: {dishInfo.fibre}</Text>
+								<Text weight={400} size='md'>
+									Fibre: <b>{dishInfo.fibre}</b>
+								</Text>
 							</List.Item>
 							<List.Item>
-								<Text>Proteins: {dishInfo.protein}</Text>
+								<Text weight={400} size='md'>
+									Proteins: <b>{dishInfo.protein}</b>
+								</Text>
 							</List.Item>
 							<List.Item>
-								<Text>Sugar: {dishInfo.sugar}</Text>
+								<Text weight={400} size='md'>
+									Sugar: <b>{dishInfo.sugar}</b>
+								</Text>
 							</List.Item>
 						</List>
 					)}

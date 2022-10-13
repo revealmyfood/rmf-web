@@ -233,7 +233,7 @@ const Restaurant = ({ data }: Props) => {
 							align='stretch'
 							justify='space-between'
 							style={
-								isViewportDesktop ? { height: '100%' } : { height: 'calc(100vh - 80px)' }
+								isViewportDesktop ? { height: '100%' } : { height: 'calc(100vh - 134px)' }
 							}
 						>
 							{/* Allergens */}

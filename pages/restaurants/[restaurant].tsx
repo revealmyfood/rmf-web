@@ -105,7 +105,7 @@ const Restaurant = ({ data }: Props) => {
 		setShowFiltersModal(false);
 	};
 
-	const handleAddTempFilters = (key, value: any) => {
+	const handleAddTempFilters = (key: any, value: any) => {
 		setTempFilters({
 			...tempFilters,
 			[key]: value

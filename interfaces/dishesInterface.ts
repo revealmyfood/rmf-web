@@ -3,6 +3,7 @@ export interface DishInfo {
 	dishName: string;
 	price: number;
 	description: string;
+	keywords: string;
 	lifestyle: string[];
 	healthTags: string[];
 	hasIngredients: boolean;
@@ -22,6 +23,7 @@ export interface RestaurantData {
 export interface Dish {
 	[key: string]: string | undefined;
 	concept?: string;
+	keywords?: string;
 	assetPath?: string;
 	category_1?: string;
 	category_2?: string;

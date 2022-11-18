@@ -540,6 +540,7 @@ export async function getServerSideProps(ctx: {
 						const dishData = {
 							id: key,
 							dishName: dish.dishName,
+							keywords: dish.keywords ?? '',
 							description: dish.description,
 							price: dish.price ? Number(dish.price) : 0,
 							category: dish.category_1?.toLowerCase() || 'no category',

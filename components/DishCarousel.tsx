@@ -19,11 +19,7 @@ const DishCarousel = ({ restaurant, dishes }: DishCarouselProps) => {
 							authorName: restaurant,
 							// datePublished: d.updatedAt, TODO: add date
 							description: d.description,
-							keywords: [
-								...d.healthTags,
-								...d.lifestyle,
-								...d.allergens.map(a => a.name)
-							].join(','),
+							keywords: d.keywords,
 							category: type,
 							ingredients: d.ingredients,
 							instructions: [],

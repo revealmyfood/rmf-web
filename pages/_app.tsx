@@ -7,6 +7,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { RecoilRoot } from 'recoil';
 import useFirebaseAuth from '../hook/useFirebaseAuth';
 import { ReactNode, useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
 
 const Auth = ({ children }: { children: ReactNode }) => {
 	useFirebaseAuth();
@@ -29,30 +30,33 @@ export default function App(props: AppProps) {
 	};
 
 	return (
-		<QueryClientProvider client={queryClient}>
-			<ColorSchemeProvider
-				colorScheme={colorScheme}
-				toggleColorScheme={toggleColorScheme}
-			>
-				<MantineProvider
-					withGlobalStyles
-					withNormalizeCSS
-					theme={{
-						colorScheme,
-						primaryColor: 'green',
-						primaryShade: 8
-					}}
+		<>
+			<QueryClientProvider client={queryClient}>
+				<ColorSchemeProvider
+					colorScheme={colorScheme}
+					toggleColorScheme={toggleColorScheme}
 				>
-					<RecoilRoot>
-						<Layout>
-							<Auth>
-								<Component {...pageProps} />
-							</Auth>
-						</Layout>
-					</RecoilRoot>
-				</MantineProvider>
-			</ColorSchemeProvider>
-			<ReactQueryDevtools />
-		</QueryClientProvider>
+					<MantineProvider
+						withGlobalStyles
+						withNormalizeCSS
+						theme={{
+							colorScheme,
+							primaryColor: 'green',
+							primaryShade: 8
+						}}
+					>
+						<RecoilRoot>
+							<Layout>
+								<Auth>
+									<Component {...pageProps} />
+								</Auth>
+							</Layout>
+						</RecoilRoot>
+					</MantineProvider>
+				</ColorSchemeProvider>
+				<ReactQueryDevtools />
+			</QueryClientProvider>
+			<Analytics />
+		</>
 	);
 }
